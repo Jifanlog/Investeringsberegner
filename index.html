@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Investeringsberegner med Skat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-800 min-h-screen py-10 px-4">
+    <div class="max-w-5xl mx-auto space-y-8">
+      <!-- Header -->
+      <div class="text-center space-y-2">
+        <h1 class="text-3xl font-bold tracking-tight text-slate-900">
+          Investeringsberegner med Skat
+        </h1>
+        <p class="text-slate-600">
+          Beregner afkast på ETF/indeksfond med automatisk optimering af ASK og
+          Aktiedepot (Lagerskat)
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <!-- Input Form -->
+        <div
+          class="md:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4"
+        >
+          <h2 class="text-lg font-semibold text-slate-900 border-b pb-2">
+            Dine Oplysninger
+          </h2>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Aktiesparekonto (kr.)</label
+            >
+            <input
+              type="number"
+              id="askInitial"
+              value="100000"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Aktiedepot (kr.)</label
+            >
+            <input
+              type="number"
+              id="stockInitial"
+              value="100000"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Månedlig indbetaling (kr.)</label
+            >
+            <input
+              type="number"
+              id="monthly"
+              value="6000"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <p class="text-xs text-slate-500 mt-0.5">
+              Indbetales direkte på Aktiedepotet.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Forventet årligt afkast (%)</label
+            >
+            <input
+              type="number"
+              id="returnRate"
+              value="7"
+              step="0.1"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Periode (År)</label
+              >
+              <input
+                type="number"
+                id="years"
+                value="20"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Måneder</label
+              >
+              <input
+                type="number"
+                id="months"
+                value="0"
+                min="0"
+                max="11"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Interval af rentetilskrivning</label
+            >
+            <select
+              disabled
+              class="w-full px-3 py-2 border rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
+            >
+              <option selected>Årlig</option>
+            </select>
+          </div>
+
+          <div class="pt-2">
+            <label
+              class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                id="payTaxWithFreshMoney"
+                checked
+                class="rounded text-blue-600 focus:ring-blue-500"
+              />
+              <span>Betal skat med friske penge (udefra)</span>
+            </label>
+            <p class="text-xs text-slate-500 mt-1">
+              Hvis ikke afkrydset, trækkes skatten direkte fra depoternes værdi
+              hvert år.
+            </p>
+          </div>
+
+          <button
+            onclick="calculate()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm"
+          >
+            Beregn Formue
+          </button>
+        </div>
+
+        <!-- Results Display -->
+        <div
+          class="md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between"
+        >
+          <div>
+            <div class="flex justify-between items-center border-b pb-2 mb-4">
+              <h2 class="text-lg font-semibold text-slate-900">
+                Resultat
+                <span
+                  id="periodLabel"
+                  class="text-sm font-normal text-slate-500"
+                ></span>
+              </h2>
+              <button
+                onclick="copyResults()"
+                id="btnCopyResults"
+                class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1 px-3 rounded border border-slate-300 transition-colors flex items-center gap-1"
+              >
+                📋 Kopier resultat
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <p
+                  id="labelGross"
+                  class="text-xs text-slate-500 uppercase font-semibold"
+                >
+                  Formue på depoter
+                </p>
+                <p id="resGross" class="text-2xl font-bold text-slate-800 mt-1">
+                  0 kr.
+                </p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <p
+                  id="labelNet"
+                  class="text-xs text-blue-600 uppercase font-semibold"
+                >
+                  Netto (minus friske skatteudlæg)
+                </p>
+                <p id="resNet" class="text-2xl font-bold text-blue-900 mt-1">
+                  0 kr.
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-3 text-sm border-t pt-4">
+              <div class="flex justify-between">
+                <span class="text-slate-600">Indledende opsparing:</span>
+                <span id="resInitial" class="font-medium text-slate-900"
+                  >0 kr.</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-600">Samlede nye indskud:</span>
+                <span id="resNewDeposits" class="font-medium text-slate-900"
+                  >0 kr.</span
+                >
+              </div>
+              <div class="flex justify-between border-t pt-2">
+                <span class="text-slate-600 font-medium"
+                  >Samlede investeringsindskud i alt:</span
+                >
+                <span id="resTotalDeposits" class="font-bold text-slate-900"
+                  >0 kr.</span
+                >
+              </div>
+              <div class="flex justify-between border-t pt-2">
+                <span class="text-slate-600"
+                  >Samlet optjent afkast (brutto):</span
+                >
+                <span id="resInterest" class="font-medium text-emerald-600"
+                  >0 kr.</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-600"
+                  >Samlet betalt skat over perioden:</span
+                >
+                <span id="resTotalTax" class="font-medium text-rose-600"
+                  >0 kr.</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-6 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800"
+          >
+            <strong>Skatte-antagelser:</strong> ASK-loft: 174.200 kr. (17%
+            lagerskat). Aktiedepot: 27% op til 79.400 kr. i årligt afkast,
+            derefter 42% lagerskat.
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Table -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <h2 class="text-lg font-semibold text-slate-900">
+            År-for-år beregning og mellemtallene
+          </h2>
+          <button
+            onclick="copyTable()"
+            id="btnCopyTable"
+            class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded border border-slate-300 transition-colors flex items-center gap-1"
+          >
+            📊 Kopier tabel (til Excel)
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table
+            id="yearlyTable"
+            class="w-full text-xs text-left text-slate-600"
+          >
+            <thead class="bg-slate-100 text-slate-700 font-semibold uppercase">
+              <tr>
+                <th class="py-3 px-2">År</th>
+                <th class="py-3 px-2">ASK Saldo</th>
+                <th class="py-3 px-2">ASK Skat (17%)</th>
+                <th class="py-3 px-2">Depot Saldo</th>
+                <th class="py-3 px-2">Depot Afkast</th>
+                <th class="py-3 px-2">Depot Skat</th>
+                <th class="py-3 px-2 text-right">Årets Skat (I alt)</th>
+              </tr>
+            </thead>
+            <tbody id="yearlyTableBody" class="divide-y divide-slate-100">
+              <!-- Genereres af JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function formatDKK(amount) {
+        return new Intl.NumberFormat("da-DK", {
+          style: "currency",
+          currency: "DKK",
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function calculate() {
+        // Inputs
+        const askInitial =
+          parseFloat(document.getElementById("askInitial").value) || 0;
+        const stockInitial =
+          parseFloat(document.getElementById("stockInitial").value) || 0;
+        const monthly =
+          parseFloat(document.getElementById("monthly").value) || 0;
+        const rate =
+          (parseFloat(document.getElementById("returnRate").value) || 0) / 100;
+        const years = parseInt(document.getElementById("years").value) || 0;
+        const months = parseInt(document.getElementById("months").value) || 0;
+        const payTaxWithFreshMoney = document.getElementById(
+          "payTaxWithFreshMoney",
+        ).checked;
+
+        const initial = askInitial + stockInitial;
+        const totalMonths = years * 12 + months;
+
+        // Skattekonstanter
+        const ASK_TAX_RATE = 0.17;
+        const STOCK_BRACKET = 79400;
+        const LOW_TAX_RATE = 0.27;
+        const HIGH_TAX_RATE = 0.42;
+
+        // Konti til simulering
+        let askBalance = askInitial;
+        let stockBalance = stockInitial;
+
+        let totalTaxPaid = 0;
+        let totalNewDeposits = 0;
+
+        const tableBody = document.getElementById("yearlyTableBody");
+        tableBody.innerHTML = "";
+
+        // Måned-for-måned og år-for-år simulering
+        for (let m = 1; m <= totalMonths; m++) {
+          // 1. Månedligt indskud sendes 100% til Aktiedepotet
+          stockBalance += monthly;
+          totalNewDeposits += monthly;
+
+          // 2. Årlig afkast- og skatteberegning
+          if (m % 12 === 0 || m === totalMonths) {
+            const yearNumber = Math.ceil(m / 12);
+            const monthsInCurrentYear = m % 12 === 0 ? 12 : m % 12;
+            const periodFraction = monthsInCurrentYear / 12;
+            const currentRate = rate * periodFraction;
+
+            // --- ASK (Passiv vækst uden nye månedlige indskud) ---
+            let askGain = askBalance * currentRate;
+            askBalance += askGain;
+            let askTax = askGain > 0 ? askGain * ASK_TAX_RATE : 0;
+
+            // --- Aktiedepot (Inkl. løbende månedlige indskud) ---
+            // Tidsvægtet afkast beregning for det forgangne år
+            let startStockBalance =
+              stockBalance - monthly * monthsInCurrentYear;
+            let stockGain =
+              startStockBalance * currentRate +
+              monthly * monthsInCurrentYear * currentRate * 0.5;
+            stockBalance += stockGain;
+
+            let stockTax = 0;
+            if (stockGain > 0) {
+              if (stockGain <= STOCK_BRACKET * periodFraction) {
+                stockTax = stockGain * LOW_TAX_RATE;
+              } else {
+                let lowTaxPart = STOCK_BRACKET * periodFraction * LOW_TAX_RATE;
+                let highTaxPart =
+                  (stockGain - STOCK_BRACKET * periodFraction) * HIGH_TAX_RATE;
+                stockTax = lowTaxPart + highTaxPart;
+              }
+            }
+
+            let totalYearTax = askTax + stockTax;
+            totalTaxPaid += totalYearTax;
+
+            // Tilføj række til tabellen
+            const row = `
+                        <tr class="hover:bg-slate-50 border-b">
+                            <td class="py-2.5 px-2 font-medium">${yearNumber}</td>
+                            <td class="py-2.5 px-2">${formatDKK(askBalance)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(askTax)}</td>
+                            <td class="py-2.5 px-2">${formatDKK(stockBalance)}</td>
+                            <td class="py-2.5 px-2 text-emerald-600">${formatDKK(stockGain)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(stockTax)}</td>
+                            <td class="py-2.5 px-2 font-bold text-right text-slate-800">${formatDKK(totalYearTax)}</td>
+                        </tr>
+                    `;
+            tableBody.innerHTML += row;
+
+            // Håndtering af skattebetaling
+            if (!payTaxWithFreshMoney) {
+              askBalance -= askTax;
+              stockBalance -= stockTax;
+            }
+          }
+        }
+
+        // Sammentælling
+        const grossBalance = askBalance + stockBalance;
+        const totalDeposits = initial + totalNewDeposits;
+
+        // Korrigeret nettoformue ud fra skattestrategi
+        const netBalance = payTaxWithFreshMoney
+          ? grossBalance - totalTaxPaid
+          : grossBalance;
+
+        // Dynamiske overskrifter
+        if (payTaxWithFreshMoney) {
+          document.getElementById("labelGross").innerText = "Formue på depoter";
+          document.getElementById("labelNet").innerText =
+            "Netto (minus friske skatteudlæg)";
+        } else {
+          document.getElementById("labelGross").innerText =
+            "Formue (uden skat)";
+          document.getElementById("labelNet").innerText =
+            "Formue på depoter (efter skat)";
+        }
+
+        // Opdater UI
+        document.getElementById("periodLabel").innerText =
+          `(${years} år og ${months} mdr.)`;
+        document.getElementById("resGross").innerText = formatDKK(grossBalance);
+        document.getElementById("resNet").innerText = formatDKK(netBalance);
+        document.getElementById("resInitial").innerText = formatDKK(initial);
+        document.getElementById("resNewDeposits").innerText =
+          formatDKK(totalNewDeposits);
+        document.getElementById("resTotalDeposits").innerText =
+          formatDKK(totalDeposits);
+        document.getElementById("resInterest").innerText = formatDKK(
+          grossBalance - totalDeposits,
+        );
+        document.getElementById("resTotalTax").innerText =
+          formatDKK(totalTaxPaid);
+      }
+
+      // Kopier samlet resultat
+      function copyResults() {
+        const period = document.getElementById("periodLabel").innerText;
+        const grossLabel = document.getElementById("labelGross").innerText;
+        const grossValue = document.getElementById("resGross").innerText;
+        const netLabel = document.getElementById("labelNet").innerText;
+        const netValue = document.getElementById("resNet").innerText;
+        const initial = document.getElementById("resInitial").innerText;
+        const newDeposits = document.getElementById("resNewDeposits").innerText;
+        const totalDeposits =
+          document.getElementById("resTotalDeposits").innerText;
+        const interest = document.getElementById("resInterest").innerText;
+        const totalTax = document.getElementById("resTotalTax").innerText;
+
+        const textToCopy = `RESULTAT ${period}
+----------------------------------
+${grossLabel}: ${grossValue}
+${netLabel}: ${netValue}
+
+Indledende opsparing: ${initial}
+Samlede nye indskud: ${newDeposits}
+Samlede investeringsindskud i alt: ${totalDeposits}
+Samlet optjent afkast (brutto): ${interest}
+Samlet betalt skat over perioden: ${totalTax}`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const btn = document.getElementById("btnCopyResults");
+          btn.innerText = "✓ Kopieret!";
+          setTimeout(() => {
+            btn.innerText = "📋 Kopier resultat";
+          }, 2000);
+        });
+      }
+
+      // Kopier tabel i Tab-separeret format (Lige til at indsætte i Excel)
+      function copyTable() {
+        const table = document.getElementById("yearlyTable");
+        let tsv = [];
+
+        // Hent overskrifter
+        let headers = [];
+        for (let cell of table.querySelectorAll("thead th")) {
+          headers.push(cell.innerText.trim());
+        }
+        tsv.push(headers.join("\t"));
+
+        // Hent rækker
+        for (let row of table.querySelectorAll("tbody tr")) {
+          let rowData = [];
+          for (let cell of row.querySelectorAll("td")) {
+            rowData.push(cell.innerText.trim());
+          }
+          tsv.push(rowData.join("\t"));
+        }
+
+        const tsvText = tsv.join("\n");
+
+        navigator.clipboard.writeText(tsvText).then(() => {
+          const btn = document.getElementById("btnCopyTable");
+          btn.innerText = "✓ Kopieret!";
+          setTimeout(() => {
+            btn.innerText = "📊 Kopier tabel (til Excel)";
+          }, 2000);
+        });
+      }
+
+      // Kør første beregning ved indlæsning
+      calculate();
+    </script>
+  </body>
+</html>
