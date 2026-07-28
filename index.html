@@ -54,6 +54,29 @@
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Beskatningsform (Aktiedepot)</label
+            >
+            <select
+              id="taxMethod"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="lager" selected>
+                Lagerbeskatning (årlig skat af urealiseret afkast)
+              </option>
+              <option value="realisation">
+                Realisationsbeskatning (skat ved salg)
+              </option>
+            </select>
+            <p class="text-xs text-slate-500 mt-0.5">
+              ASK beskattes altid med lagerbeskatning (17%). Ved
+              realisationsbeskatning betales ingen skat af Aktiedepotet
+              undervejs - hele gevinsten beskattes samlet ved "salg" i sidste
+              år.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
               >Månedlig indbetaling (kr.)</label
             >
             <input
@@ -236,8 +259,10 @@
             class="mt-6 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800"
           >
             <strong>Skatte-antagelser:</strong> ASK-loft: 174.200 kr. (17%
-            lagerskat). Aktiedepot: 27% op til 79.400 kr. i årligt afkast,
-            derefter 42% lagerskat.
+            lagerskat). <span id="taxAssumptionText"
+              >Aktiedepot: 27% op til 79.400 kr. i årligt afkast, derefter 42%
+              lagerskat.</span
+            >
           </div>
         </div>
       </div>
@@ -268,7 +293,7 @@
                 <th class="py-3 px-2">ASK Skat (17%)</th>
                 <th class="py-3 px-2">Depot Saldo</th>
                 <th class="py-3 px-2">Depot Afkast</th>
-                <th class="py-3 px-2">Depot Skat</th>
+                <th class="py-3 px-2" id="depotSkatHeader">Depot Skat</th>
                 <th class="py-3 px-2 text-right">Årets Skat (I alt)</th>
               </tr>
             </thead>
@@ -304,6 +329,7 @@
         const payTaxWithFreshMoney = document.getElementById(
           "payTaxWithFreshMoney",
         ).checked;
+        const taxMethod = document.getElementById("taxMethod").value;
 
         const initial = askInitial + stockInitial;
         const totalMonths = years * 12 + months;
@@ -323,6 +349,7 @@
 
         const tableBody = document.getElementById("yearlyTableBody");
         tableBody.innerHTML = "";
+        const yearRows = [];
 
         // Måned-for-måned og år-for-år simulering
         for (let m = 1; m <= totalMonths; m++) {
@@ -352,7 +379,7 @@
             stockBalance += stockGain;
 
             let stockTax = 0;
-            if (stockGain > 0) {
+            if (taxMethod === "lager" && stockGain > 0) {
               if (stockGain <= STOCK_BRACKET * periodFraction) {
                 stockTax = stockGain * LOW_TAX_RATE;
               } else {
@@ -362,23 +389,22 @@
                 stockTax = lowTaxPart + highTaxPart;
               }
             }
+            // Ved realisationsbeskatning betales ingen skat af depotet
+            // undervejs - hele gevinsten beskattes samlet ved "salg" til sidst.
 
             let totalYearTax = askTax + stockTax;
             totalTaxPaid += totalYearTax;
 
-            // Tilføj række til tabellen
-            const row = `
-                        <tr class="hover:bg-slate-50 border-b">
-                            <td class="py-2.5 px-2 font-medium">${yearNumber}</td>
-                            <td class="py-2.5 px-2">${formatDKK(askBalance)}</td>
-                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(askTax)}</td>
-                            <td class="py-2.5 px-2">${formatDKK(stockBalance)}</td>
-                            <td class="py-2.5 px-2 text-emerald-600">${formatDKK(stockGain)}</td>
-                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(stockTax)}</td>
-                            <td class="py-2.5 px-2 font-bold text-right text-slate-800">${formatDKK(totalYearTax)}</td>
-                        </tr>
-                    `;
-            tableBody.innerHTML += row;
+            // Gem årets tal til senere rendering af tabellen
+            yearRows.push({
+              yearNumber,
+              askBalance,
+              askTax,
+              stockBalance,
+              stockGain,
+              stockTax,
+              totalYearTax,
+            });
 
             // Håndtering af skattebetaling
             if (!payTaxWithFreshMoney) {
@@ -386,6 +412,64 @@
               stockBalance -= stockTax;
             }
           }
+        }
+
+        // Realisationsbeskatning: hele Aktiedepotets samlede gevinst
+        // beskattes samlet ved "salg" i sidste år.
+        if (taxMethod === "realisation") {
+          const stockCostBasis = stockInitial + totalNewDeposits;
+          const totalStockGain = stockBalance - stockCostBasis;
+          let saleTax = 0;
+          if (totalStockGain > 0) {
+            if (totalStockGain <= STOCK_BRACKET) {
+              saleTax = totalStockGain * LOW_TAX_RATE;
+            } else {
+              saleTax =
+                STOCK_BRACKET * LOW_TAX_RATE +
+                (totalStockGain - STOCK_BRACKET) * HIGH_TAX_RATE;
+            }
+          }
+
+          totalTaxPaid += saleTax;
+
+          if (!payTaxWithFreshMoney) {
+            stockBalance -= saleTax;
+          }
+
+          const lastRow = yearRows[yearRows.length - 1];
+          if (lastRow) {
+            lastRow.stockTax += saleTax;
+            lastRow.totalYearTax += saleTax;
+          }
+        }
+
+        // Render tabellen
+        for (const r of yearRows) {
+          const row = `
+                        <tr class="hover:bg-slate-50 border-b">
+                            <td class="py-2.5 px-2 font-medium">${r.yearNumber}</td>
+                            <td class="py-2.5 px-2">${formatDKK(r.askBalance)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(r.askTax)}</td>
+                            <td class="py-2.5 px-2">${formatDKK(r.stockBalance)}</td>
+                            <td class="py-2.5 px-2 text-emerald-600">${formatDKK(r.stockGain)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(r.stockTax)}</td>
+                            <td class="py-2.5 px-2 font-bold text-right text-slate-800">${formatDKK(r.totalYearTax)}</td>
+                        </tr>
+                    `;
+          tableBody.innerHTML += row;
+        }
+
+        // Dynamisk header og skatte-antagelsestekst ud fra beskatningsform
+        const depotSkatHeader = document.getElementById("depotSkatHeader");
+        const taxAssumptionText = document.getElementById("taxAssumptionText");
+        if (taxMethod === "realisation") {
+          depotSkatHeader.innerText = "Depot Skat (ved salg)";
+          taxAssumptionText.innerText =
+            'Aktiedepot: realisationsbeskatning - 27% op til 79.400 kr., derefter 42%, betalt samlet ved "salg" i sidste år.';
+        } else {
+          depotSkatHeader.innerText = "Depot Skat";
+          taxAssumptionText.innerText =
+            "Aktiedepot: 27% op til 79.400 kr. i årligt afkast, derefter 42% lagerskat.";
         }
 
         // Sammentælling
