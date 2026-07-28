@@ -445,6 +445,7 @@
                 />
                 <button
                   type="button"
+                  id="btnUseCalcResult"
                   onclick="useCalcResultForFire()"
                   class="whitespace-nowrap text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 rounded-lg border border-slate-300 transition-colors"
                 >
@@ -452,8 +453,10 @@
                 </button>
               </div>
               <p class="text-xs text-slate-500 mt-0.5">
-                Hentes automatisk fra "Netto" i "Opsparing & Afkast"-fanen, eller
-                indtast selv.
+                Hentes automatisk fra "Formue på depoter" i "Opsparing &
+                Afkast"-fanen. Kræver lagerbeskatning og at "Betal skat med
+                friske penge" er slået til (ellers indeholder saldoen ikke den
+                fulde, ubeskattede formue) - eller indtast selv.
               </p>
             </div>
 
@@ -975,8 +978,8 @@
         document.getElementById("resRealNet").innerText =
           formatDKK(realNetBalance);
 
-        // Gemmes så FIRE-beregneren kan hente nettoformuen med ét klik
-        window.__lastNetBalance = netBalance;
+        // Gemmes så FIRE-beregneren kan hente "Formue på depoter" med ét klik
+        window.__lastGrossBalance = grossBalance;
       }
 
       // Kopier samlet resultat
@@ -1048,9 +1051,31 @@ ${realNetLabel} ${realNetValue}`;
         });
       }
 
-      // Hent nettoformuen fra "Opsparing & Afkast"-fanen ind i FIRE-beregneren
+      // Hent "Formue på depoter" fra "Opsparing & Afkast"-fanen ind i
+      // FIRE-beregneren. Kræver lagerbeskatning + betaling af skat med friske
+      // penge, da "Formue på depoter" ellers ikke afspejler den fulde,
+      // ubeskattede/ubetalte depotsaldo (fx en udestående salgsskat ved
+      // realisationsbeskatning, eller en saldo der allerede er reduceret med
+      // skat).
       function useCalcResultForFire() {
-        const val = window.__lastNetBalance || 0;
+        const taxMethod = document.getElementById("taxMethod").value;
+        const payTaxWithFreshMoney = document.getElementById(
+          "payTaxWithFreshMoney",
+        ).checked;
+        const btn = document.getElementById("btnUseCalcResult");
+
+        if (taxMethod !== "lager" || !payTaxWithFreshMoney) {
+          if (btn) {
+            const original = btn.innerText;
+            btn.innerText = "⚠️ Kræver lagerskat + friske penge";
+            setTimeout(() => {
+              btn.innerText = original;
+            }, 2500);
+          }
+          return;
+        }
+
+        const val = window.__lastGrossBalance || 0;
         document.getElementById("firePortfolio").value = Math.round(val);
         calculateFire();
       }
