@@ -135,11 +135,18 @@
               >Interval af rentetilskrivning</label
             >
             <select
-              disabled
-              class="w-full px-3 py-2 border rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
+              id="accrualInterval"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
-              <option selected>Årlig</option>
+              <option value="monthly" selected>Månedlig</option>
+              <option value="annual">Årlig</option>
             </select>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Månedlig tilskrivning passer bedst til månedlige indbetalinger.
+              Ved meget høje renter eller lang investeringshorisont vil
+              resultatet afvige mere fra årlig tilskrivning. Skatten
+              (lagerskat) opgøres altid årligt, uanset valg her.
+            </p>
           </div>
 
           <div class="pt-2">
@@ -330,6 +337,8 @@
           "payTaxWithFreshMoney",
         ).checked;
         const taxMethod = document.getElementById("taxMethod").value;
+        const accrualInterval =
+          document.getElementById("accrualInterval").value;
 
         const initial = askInitial + stockInitial;
         const totalMonths = years * 12 + months;
@@ -351,32 +360,57 @@
         tableBody.innerHTML = "";
         const yearRows = [];
 
+        // Bogholderi for årets start-saldo og indskud, bruges til
+        // skatteopgørelsen som altid sker årligt uanset rentetilskrivning.
+        let askYearStart = askBalance;
+        let stockYearStart = stockBalance;
+        let stockDepositsThisYear = 0;
+
         // Måned-for-måned og år-for-år simulering
         for (let m = 1; m <= totalMonths; m++) {
           // 1. Månedligt indskud sendes 100% til Aktiedepotet
           stockBalance += monthly;
           totalNewDeposits += monthly;
+          stockDepositsThisYear += monthly;
 
-          // 2. Årlig afkast- og skatteberegning
+          // 2. Månedlig rentetilskrivning (hvis valgt) - selve afkastet
+          // tilskrives hver måned, men skatten opgøres stadig kun årligt.
+          if (accrualInterval === "monthly") {
+            const monthlyRate = rate / 12;
+            askBalance *= 1 + monthlyRate;
+            stockBalance *= 1 + monthlyRate;
+          }
+
+          // 3. Årlig afkast- og skatteberegning
           if (m % 12 === 0 || m === totalMonths) {
             const yearNumber = Math.ceil(m / 12);
             const monthsInCurrentYear = m % 12 === 0 ? 12 : m % 12;
             const periodFraction = monthsInCurrentYear / 12;
-            const currentRate = rate * periodFraction;
 
-            // --- ASK (Passiv vækst uden nye månedlige indskud) ---
-            let askGain = askBalance * currentRate;
-            askBalance += askGain;
+            let askGain, stockGain;
+
+            if (accrualInterval === "monthly") {
+              // Afkastet er allerede tilskrevet måned for måned ovenfor -
+              // årets samlede gevinst er blot ændringen i saldo.
+              askGain = askBalance - askYearStart;
+              stockGain =
+                stockBalance - stockYearStart - stockDepositsThisYear;
+            } else {
+              const currentRate = rate * periodFraction;
+
+              // --- ASK (Passiv vækst uden nye månedlige indskud) ---
+              askGain = askYearStart * currentRate;
+              askBalance = askYearStart + askGain;
+
+              // --- Aktiedepot (Inkl. løbende månedlige indskud) ---
+              // Tidsvægtet afkast beregning for det forgangne år
+              stockGain =
+                stockYearStart * currentRate +
+                stockDepositsThisYear * currentRate * 0.5;
+              stockBalance = stockYearStart + stockDepositsThisYear + stockGain;
+            }
+
             let askTax = askGain > 0 ? askGain * ASK_TAX_RATE : 0;
-
-            // --- Aktiedepot (Inkl. løbende månedlige indskud) ---
-            // Tidsvægtet afkast beregning for det forgangne år
-            let startStockBalance =
-              stockBalance - monthly * monthsInCurrentYear;
-            let stockGain =
-              startStockBalance * currentRate +
-              monthly * monthsInCurrentYear * currentRate * 0.5;
-            stockBalance += stockGain;
 
             let stockTax = 0;
             if (taxMethod === "lager" && stockGain > 0) {
@@ -411,6 +445,11 @@
               askBalance -= askTax;
               stockBalance -= stockTax;
             }
+
+            // Nulstil årets bogholderi til næste år
+            askYearStart = askBalance;
+            stockYearStart = stockBalance;
+            stockDepositsThisYear = 0;
           }
         }
 
