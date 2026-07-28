@@ -19,7 +19,26 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+      <!-- Tabs -->
+      <div class="flex justify-center gap-2">
+        <button
+          id="tabBtnAccumulation"
+          onclick="switchTab('accumulation')"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-blue-600 text-white shadow-sm"
+        >
+          📈 Opsparing & Afkast
+        </button>
+        <button
+          id="tabBtnFire"
+          onclick="switchTab('fire')"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-white text-slate-600 border border-slate-300 hover:bg-slate-50"
+        >
+          🎯 Tidlig Pension (FIRE)
+        </button>
+      </div>
+
+      <div id="tabAccumulation" class="space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         <!-- Input Form -->
         <div
           class="md:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4"
@@ -143,6 +162,11 @@
               />
             </div>
           </div>
+          <p class="text-xs text-slate-500 -mt-2">
+            Koblet til alderfelterne i "Tidlig Pension (FIRE)"-fanen - ændres
+            automatisk hvis du opdaterer din alder eller alder ved tidlig
+            pension der, og omvendt.
+          </p>
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -191,7 +215,7 @@
 
         <!-- Results Display -->
         <div
-          class="md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between"
+          class="md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col"
         >
           <div>
             <div class="flex justify-between items-center border-b pb-2 mb-4">
@@ -336,6 +360,354 @@
           </table>
         </div>
       </div>
+      </div>
+
+      <!-- FIRE / Tidlig Pension Tab -->
+      <div id="tabFire" class="space-y-8 hidden">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+            Tidlig Pension (FIRE) Beregner
+          </h2>
+          <p class="text-slate-600 max-w-2xl mx-auto">
+            Beregn om din formue rækker til at bygge bro fra tidlig pension til
+            din pension, baseret på 4%-reglen og en år-for-år
+            nedsparingssimulering.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          <!-- Input Form -->
+          <div
+            class="md:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4"
+          >
+            <h2 class="text-lg font-semibold text-slate-900 border-b pb-2">
+              Dine Planer
+            </h2>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Din alder nu</label
+                >
+                <input
+                  type="number"
+                  id="fireCurrentAge"
+                  value="34"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Alder ved tidlig pension</label
+                >
+                <input
+                  type="number"
+                  id="fireRetireAge"
+                  value="54"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 -mt-2">
+              Antal år herimellem er koblet til "Periode (år)" i
+              "Opsparing & Afkast"-fanen - ændringer opdaterer automatisk
+              begge steder, og din forventede formue genindlæses.
+            </p>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Alder ved pension</label
+              >
+              <input
+                type="number"
+                id="firePensionAge"
+                value="69"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <p class="text-xs text-slate-500 mt-0.5">
+                Perioden herimellem ("broen") skal din formue selv dække, indtil
+                din pension kicker ind. Kan være folkepension, ratepension
+                eller en anden fast pensionsindkomst - vælg den alder hvor
+                <em>din</em> næste faste indkomstkilde starter.
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Årlige leveomkostninger i dag (kr.)</label
+              >
+              <input
+                type="number"
+                id="fireAnnualExpenses"
+                value="240000"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Forventet formue ved tidlig pension (kr.)</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="number"
+                  id="firePortfolio"
+                  value="0"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  id="btnUseCalcResult"
+                  onclick="useCalcResultForFire()"
+                  class="whitespace-nowrap text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 rounded-lg border border-slate-300 transition-colors"
+                >
+                  Hent fra beregner
+                </button>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Hentes automatisk fra "Formue på depoter" i "Opsparing &
+                Afkast"-fanen. Kræver lagerbeskatning og at "Betal skat med
+                friske penge" er slået til (ellers indeholder saldoen ikke den
+                fulde, ubeskattede formue) - eller indtast selv.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Afkast under nedsparing (%)</label
+                >
+                <input
+                  type="number"
+                  id="fireReturnRate"
+                  value="5"
+                  step="0.1"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Forventet inflation (%)</label
+                >
+                <input
+                  type="number"
+                  id="fireInflation"
+                  value="2"
+                  step="0.1"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div class="pt-2 border-t">
+              <p class="text-sm font-medium text-slate-700 mb-2">
+                Kontant buffer (opsparing)
+              </p>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1"
+                    >Månedlig opsparing (kr.)</label
+                  >
+                  <input
+                    type="number"
+                    id="fireBufferMonthly"
+                    value="3500"
+                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1"
+                    >Rente på buffer (%)</label
+                  >
+                  <input
+                    type="number"
+                    id="fireBufferRate"
+                    value="0.5"
+                    step="0.1"
+                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">
+                En kontant buffer beskytter mod at skulle sælge investeringer med
+                tab, hvis markedet falder lige efter du går på tidlig pension
+                (sequence-of-returns risk).
+              </p>
+            </div>
+
+            <button
+              onclick="calculateFire()"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm"
+            >
+              Beregn Tidlig Pension
+            </button>
+          </div>
+
+          <!-- Results Display -->
+          <div
+            class="md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col"
+          >
+            <div>
+              <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <h2 class="text-lg font-semibold text-slate-900">
+                  Resultat
+                  <span id="fireStatusBadge" class="text-sm font-normal"></span>
+                </h2>
+                <button
+                  onclick="copyFireResults()"
+                  id="btnCopyFireResults"
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1 px-3 rounded border border-slate-300 transition-colors flex items-center gap-1"
+                >
+                  📋 Kopier resultat
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p class="text-xs text-slate-500 uppercase font-semibold">
+                    Årlige udgifter ved pension
+                  </p>
+                  <p
+                    id="fireResExpenseAtRetirement"
+                    class="text-2xl font-bold text-slate-800 mt-1"
+                  >
+                    0 kr.
+                  </p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                  <p class="text-xs text-blue-600 uppercase font-semibold">
+                    Formue tilbage ved pension
+                  </p>
+                  <p
+                    id="fireResFinalBalance"
+                    class="text-2xl font-bold text-blue-900 mt-1"
+                  >
+                    0 kr.
+                  </p>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-sm border-t pt-4">
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Antal år til tidlig pension:</span>
+                  <span id="fireResYearsToRetire" class="font-medium text-slate-900"
+                    >0 år</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600"
+                    >Antal år broen skal dække (til pension):</span
+                  >
+                  <span id="fireResBridgeYears" class="font-medium text-slate-900"
+                    >0 år</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600"
+                    >Permanent FIRE-tal (25x-reglen, 4% SWR):</span
+                  >
+                  <span id="fireResFireNumber" class="font-medium text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Din formue ved tidlig pension:</span>
+                  <span id="fireResPortfolio" class="font-medium text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600"
+                    >Kontant buffer ved tidlig pension:</span
+                  >
+                  <span id="fireResBuffer" class="font-medium text-emerald-600"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600 font-medium"
+                    >Samlet formue ved tidlig pension:</span
+                  >
+                  <span id="fireResTotalWealth" class="font-bold text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600"
+                    >Samlet formue i dagens købekraft:</span
+                  >
+                  <span
+                    id="fireResTotalWealthReal"
+                    class="font-bold text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600"
+                    >Restformue ved pension i dagens købekraft:</span
+                  >
+                  <span
+                    id="fireResFinalBalanceReal"
+                    class="font-medium text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="mt-6 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800"
+            >
+              <strong>Metode:</strong> Årlige leveomkostninger fremskrives med
+              den valgte inflation til pensionsalderen. Det permanente FIRE-tal
+              er 25x årlige udgifter (svarende til 4%-reglen / Trinity Study).
+              Broen fra tidlig pension til pension simuleres år for år:
+              hvert år hæves de inflationsjusterede leveomkostninger fra
+              formuen, hvorefter resten forrentes med det valgte afkast under
+              nedsparing. Kontantbufferen indgår ikke i broberegningen - den er
+              tænkt som en ekstra buffer mod at skulle sælge investeringer med
+              tab i et børskrak (sequence-of-returns risiko).
+            </div>
+          </div>
+        </div>
+
+        <!-- Bridge Year-by-Year Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold text-slate-900">
+              Nedsparing år-for-år (broen til pension)
+            </h2>
+            <button
+              onclick="copyFireTable()"
+              id="btnCopyFireTable"
+              class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded border border-slate-300 transition-colors flex items-center gap-1"
+            >
+              📊 Kopier tabel (til Excel)
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table
+              id="fireYearlyTable"
+              class="w-full text-xs text-left text-slate-600"
+            >
+              <thead class="bg-slate-100 text-slate-700 font-semibold uppercase">
+                <tr>
+                  <th class="py-3 px-2">Alder</th>
+                  <th class="py-3 px-2">År</th>
+                  <th class="py-3 px-2">Formue (start)</th>
+                  <th class="py-3 px-2">Hævning (år)</th>
+                  <th class="py-3 px-2">Afkast</th>
+                  <th class="py-3 px-2">Formue (slut)</th>
+                  <th class="py-3 px-2 text-right">Realværdi (i dag)</th>
+                </tr>
+              </thead>
+              <tbody id="fireYearlyTableBody" class="divide-y divide-slate-100">
+                <!-- Genereres af JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -345,6 +717,39 @@
           currency: "DKK",
           maximumFractionDigits: 0,
         }).format(amount);
+      }
+
+      // Skift mellem "Opsparing & Afkast" og "Tidlig Pension (FIRE)"
+      function switchTab(tab) {
+        const accDiv = document.getElementById("tabAccumulation");
+        const fireDiv = document.getElementById("tabFire");
+        const accBtn = document.getElementById("tabBtnAccumulation");
+        const fireBtn = document.getElementById("tabBtnFire");
+
+        const activeClasses = ["bg-blue-600", "text-white", "shadow-sm"];
+        const inactiveClasses = [
+          "bg-white",
+          "text-slate-600",
+          "border",
+          "border-slate-300",
+          "hover:bg-slate-50",
+        ];
+
+        if (tab === "fire") {
+          accDiv.classList.add("hidden");
+          fireDiv.classList.remove("hidden");
+          accBtn.classList.remove(...activeClasses);
+          accBtn.classList.add(...inactiveClasses);
+          fireBtn.classList.remove(...inactiveClasses);
+          fireBtn.classList.add(...activeClasses);
+        } else {
+          fireDiv.classList.add("hidden");
+          accDiv.classList.remove("hidden");
+          fireBtn.classList.remove(...activeClasses);
+          fireBtn.classList.add(...inactiveClasses);
+          accBtn.classList.remove(...inactiveClasses);
+          accBtn.classList.add(...activeClasses);
+        }
       }
 
       function calculate() {
@@ -584,6 +989,9 @@
           formatDKK(totalTaxPaid);
         document.getElementById("resRealNet").innerText =
           formatDKK(realNetBalance);
+
+        // Gemmes så FIRE-beregneren kan hente "Formue på depoter" med ét klik
+        window.__lastGrossBalance = grossBalance;
       }
 
       // Kopier samlet resultat
@@ -655,8 +1063,295 @@ ${realNetLabel} ${realNetValue}`;
         });
       }
 
+      // Holder "Periode (år)" i Opsparing-fanen og alderfelterne i FIRE-fanen
+      // synkroniseret, så "Forventet formue ved tidlig pension" aldrig bliver
+      // stående med en investeringsperiode der ikke længere passer.
+      let isSyncingHorizon = false;
+
+      function syncYearsFromFireAges() {
+        if (isSyncingHorizon) return;
+        isSyncingHorizon = true;
+
+        const currentAge =
+          parseInt(document.getElementById("fireCurrentAge").value) || 0;
+        const retireAge =
+          parseInt(document.getElementById("fireRetireAge").value) || 0;
+        const yearsToRetire = Math.max(0, retireAge - currentAge);
+
+        document.getElementById("years").value = yearsToRetire;
+        document.getElementById("months").value = 0;
+
+        calculate();
+        calculateFire();
+        useCalcResultForFire();
+
+        isSyncingHorizon = false;
+      }
+
+      function syncFireAgesFromYears() {
+        if (isSyncingHorizon) return;
+        isSyncingHorizon = true;
+
+        const years = parseInt(document.getElementById("years").value) || 0;
+        const months = parseInt(document.getElementById("months").value) || 0;
+        const currentAge =
+          parseInt(document.getElementById("fireCurrentAge").value) || 0;
+
+        document.getElementById("fireRetireAge").value =
+          currentAge + Math.round(years + months / 12);
+
+        calculate();
+        calculateFire();
+        useCalcResultForFire();
+
+        isSyncingHorizon = false;
+      }
+
+      // Hent "Formue på depoter" fra "Opsparing & Afkast"-fanen ind i
+      // FIRE-beregneren. Kræver lagerbeskatning + betaling af skat med friske
+      // penge, da "Formue på depoter" ellers ikke afspejler den fulde,
+      // ubeskattede/ubetalte depotsaldo (fx en udestående salgsskat ved
+      // realisationsbeskatning, eller en saldo der allerede er reduceret med
+      // skat).
+      function useCalcResultForFire() {
+        const taxMethod = document.getElementById("taxMethod").value;
+        const payTaxWithFreshMoney = document.getElementById(
+          "payTaxWithFreshMoney",
+        ).checked;
+        const btn = document.getElementById("btnUseCalcResult");
+
+        if (taxMethod !== "lager" || !payTaxWithFreshMoney) {
+          if (btn) {
+            const original = btn.innerText;
+            btn.innerText = "⚠️ Kræver lagerskat + friske penge";
+            setTimeout(() => {
+              btn.innerText = original;
+            }, 2500);
+          }
+          return;
+        }
+
+        const val = window.__lastGrossBalance || 0;
+        document.getElementById("firePortfolio").value = Math.round(val);
+        calculateFire();
+      }
+
+      function calculateFire() {
+        // Inputs
+        const currentAge =
+          parseInt(document.getElementById("fireCurrentAge").value) || 0;
+        const retireAge =
+          parseInt(document.getElementById("fireRetireAge").value) || 0;
+        const pensionAge =
+          parseInt(document.getElementById("firePensionAge").value) || 0;
+        const annualExpensesToday =
+          parseFloat(document.getElementById("fireAnnualExpenses").value) || 0;
+        const portfolio =
+          parseFloat(document.getElementById("firePortfolio").value) || 0;
+        const returnRate =
+          (parseFloat(document.getElementById("fireReturnRate").value) || 0) /
+          100;
+        const inflation =
+          (parseFloat(document.getElementById("fireInflation").value) || 0) /
+          100;
+        const bufferMonthly =
+          parseFloat(document.getElementById("fireBufferMonthly").value) || 0;
+        const bufferRate =
+          (parseFloat(document.getElementById("fireBufferRate").value) || 0) /
+          100;
+
+        const yearsToRetire = Math.max(0, retireAge - currentAge);
+        const bridgeYears = Math.max(0, pensionAge - retireAge);
+
+        // Fremskrivning af årlige leveomkostninger til pensionsalderen
+        const expenseAtRetirement =
+          annualExpensesToday * Math.pow(1 + inflation, yearsToRetire);
+
+        // Permanent FIRE-tal (25x-reglen / 4% Safe Withdrawal Rate)
+        const fireNumber = expenseAtRetirement * 25;
+
+        // Kontant buffer - månedlig opsparing frem til tidlig pension
+        let bufferBalance = 0;
+        const bufferMonthlyRate = bufferRate / 12;
+        const bufferMonths = yearsToRetire * 12;
+        for (let m = 1; m <= bufferMonths; m++) {
+          bufferBalance += bufferMonthly;
+          bufferBalance *= 1 + bufferMonthlyRate;
+        }
+
+        // Nedsparingssimulering: broen fra tidlig pension til pension.
+        // Hvert år hæves de inflationsjusterede leveomkostninger, hvorefter
+        // resten forrentes med afkastet under nedsparing.
+        const tableBody = document.getElementById("fireYearlyTableBody");
+        tableBody.innerHTML = "";
+        let balance = portfolio;
+        let finalBalance = portfolio;
+
+        for (let i = 1; i <= bridgeYears; i++) {
+          const withdrawal =
+            expenseAtRetirement * Math.pow(1 + inflation, i - 1);
+          const startBalance = balance;
+          balance -= withdrawal;
+          const growth = balance * returnRate;
+          balance += growth;
+          const realValue =
+            balance / Math.pow(1 + inflation, yearsToRetire + i);
+
+          const row = `
+                        <tr class="hover:bg-slate-50 border-b">
+                            <td class="py-2.5 px-2 font-medium">${retireAge + i}</td>
+                            <td class="py-2.5 px-2">${i}</td>
+                            <td class="py-2.5 px-2">${formatDKK(startBalance)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(withdrawal)}</td>
+                            <td class="py-2.5 px-2 text-emerald-600">${formatDKK(growth)}</td>
+                            <td class="py-2.5 px-2">${formatDKK(balance)}</td>
+                            <td class="py-2.5 px-2 text-right font-medium">${formatDKK(realValue)}</td>
+                        </tr>
+                    `;
+          tableBody.innerHTML += row;
+          finalBalance = balance;
+        }
+
+        const totalWealthNominal = portfolio + bufferBalance;
+        const totalWealthReal =
+          totalWealthNominal / Math.pow(1 + inflation, yearsToRetire);
+        const finalBalanceReal =
+          finalBalance / Math.pow(1 + inflation, yearsToRetire + bridgeYears);
+
+        // Status-badge
+        const statusBadge = document.getElementById("fireStatusBadge");
+        if (bridgeYears === 0) {
+          statusBadge.innerText = "";
+        } else if (finalBalance >= 0) {
+          statusBadge.innerText = "🟢 På sporet";
+          statusBadge.className = "text-sm font-normal text-emerald-600";
+        } else {
+          statusBadge.innerText = "🔴 Utilstrækkelig - underskud";
+          statusBadge.className = "text-sm font-normal text-rose-600";
+        }
+
+        // Opdater UI
+        document.getElementById("fireResExpenseAtRetirement").innerText =
+          formatDKK(expenseAtRetirement);
+        document.getElementById("fireResFinalBalance").innerText =
+          formatDKK(finalBalance);
+        document.getElementById("fireResYearsToRetire").innerText =
+          `${yearsToRetire} år`;
+        document.getElementById("fireResBridgeYears").innerText =
+          `${bridgeYears} år`;
+        document.getElementById("fireResFireNumber").innerText =
+          formatDKK(fireNumber);
+        document.getElementById("fireResPortfolio").innerText =
+          formatDKK(portfolio);
+        document.getElementById("fireResBuffer").innerText =
+          formatDKK(bufferBalance);
+        document.getElementById("fireResTotalWealth").innerText = formatDKK(
+          totalWealthNominal,
+        );
+        document.getElementById("fireResTotalWealthReal").innerText =
+          formatDKK(totalWealthReal);
+        document.getElementById("fireResFinalBalanceReal").innerText =
+          formatDKK(finalBalanceReal);
+      }
+
+      // Kopier FIRE-resultat
+      function copyFireResults() {
+        const expenseAtRetirement = document.getElementById(
+          "fireResExpenseAtRetirement",
+        ).innerText;
+        const finalBalance =
+          document.getElementById("fireResFinalBalance").innerText;
+        const yearsToRetire =
+          document.getElementById("fireResYearsToRetire").innerText;
+        const bridgeYears =
+          document.getElementById("fireResBridgeYears").innerText;
+        const fireNumber =
+          document.getElementById("fireResFireNumber").innerText;
+        const portfolio =
+          document.getElementById("fireResPortfolio").innerText;
+        const buffer = document.getElementById("fireResBuffer").innerText;
+        const totalWealth =
+          document.getElementById("fireResTotalWealth").innerText;
+        const totalWealthReal = document.getElementById(
+          "fireResTotalWealthReal",
+        ).innerText;
+        const finalBalanceReal = document.getElementById(
+          "fireResFinalBalanceReal",
+        ).innerText;
+        const status = document.getElementById("fireStatusBadge").innerText;
+
+        const textToCopy = `TIDLIG PENSION (FIRE) - RESULTAT ${status}
+----------------------------------
+Antal år til tidlig pension: ${yearsToRetire}
+Antal år broen skal dække: ${bridgeYears}
+
+Årlige udgifter ved pension: ${expenseAtRetirement}
+Permanent FIRE-tal (25x-reglen): ${fireNumber}
+
+Formue ved tidlig pension: ${portfolio}
+Kontant buffer ved tidlig pension: ${buffer}
+Samlet formue ved tidlig pension: ${totalWealth}
+Samlet formue i dagens købekraft: ${totalWealthReal}
+
+Formue tilbage ved pension: ${finalBalance}
+Restformue i dagens købekraft: ${finalBalanceReal}`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const btn = document.getElementById("btnCopyFireResults");
+          btn.innerText = "✓ Kopieret!";
+          setTimeout(() => {
+            btn.innerText = "📋 Kopier resultat";
+          }, 2000);
+        });
+      }
+
+      // Kopier FIRE-tabel i Tab-separeret format (til Excel)
+      function copyFireTable() {
+        const table = document.getElementById("fireYearlyTable");
+        let tsv = [];
+
+        let headers = [];
+        for (let cell of table.querySelectorAll("thead th")) {
+          headers.push(cell.innerText.trim());
+        }
+        tsv.push(headers.join("\t"));
+
+        for (let row of table.querySelectorAll("tbody tr")) {
+          let rowData = [];
+          for (let cell of row.querySelectorAll("td")) {
+            rowData.push(cell.innerText.trim());
+          }
+          tsv.push(rowData.join("\t"));
+        }
+
+        const tsvText = tsv.join("\n");
+
+        navigator.clipboard.writeText(tsvText).then(() => {
+          const btn = document.getElementById("btnCopyFireTable");
+          btn.innerText = "✓ Kopieret!";
+          setTimeout(() => {
+            btn.innerText = "📊 Kopier tabel (til Excel)";
+          }, 2000);
+        });
+      }
+
+      // Synkroniser investeringsperiode <-> FIRE-alder, når felterne ændres
+      document
+        .getElementById("fireCurrentAge")
+        .addEventListener("change", syncYearsFromFireAges);
+      document
+        .getElementById("fireRetireAge")
+        .addEventListener("change", syncYearsFromFireAges);
+      document
+        .getElementById("years")
+        .addEventListener("change", syncFireAgesFromYears);
+      document
+        .getElementById("months")
+        .addEventListener("change", syncFireAgesFromYears);
+
       // Kør første beregning ved indlæsning
       calculate();
+      useCalcResultForFire();
     </script>
   </body>
 </html>
