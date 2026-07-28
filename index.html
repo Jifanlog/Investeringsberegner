@@ -35,7 +35,7 @@
             <input
               type="number"
               id="askInitial"
-              value="100000"
+              value="193000"
               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
@@ -47,7 +47,7 @@
             <input
               type="number"
               id="stockInitial"
-              value="100000"
+              value="283000"
               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
@@ -90,17 +90,31 @@
             </p>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Forventet årligt afkast (%)</label
-            >
-            <input
-              type="number"
-              id="returnRate"
-              value="7"
-              step="0.1"
-              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Forventet årligt afkast (%)</label
+              >
+              <input
+                type="number"
+                id="returnRate"
+                value="7"
+                step="0.1"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Forventet årlig inflation (%)</label
+              >
+              <input
+                type="number"
+                id="inflationRate"
+                value="2"
+                step="0.1"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -135,11 +149,18 @@
               >Interval af rentetilskrivning</label
             >
             <select
-              disabled
-              class="w-full px-3 py-2 border rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed"
+              id="accrualInterval"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
-              <option selected>Årlig</option>
+              <option value="monthly" selected>Månedlig</option>
+              <option value="annual">Årlig</option>
             </select>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Månedlig tilskrivning passer bedst til månedlige indbetalinger.
+              Ved meget høje renter eller lang investeringshorisont vil
+              resultatet afvige mere fra årlig tilskrivning. Skatten
+              (lagerskat) opgøres altid årligt, uanset valg her.
+            </p>
           </div>
 
           <div class="pt-2">
@@ -252,6 +273,14 @@
                   >0 kr.</span
                 >
               </div>
+              <div class="flex justify-between border-t pt-2">
+                <span class="text-slate-600" id="labelRealNet"
+                  >Netto i dagens købekraft (efter inflation):</span
+                >
+                <span id="resRealNet" class="font-bold text-slate-900"
+                  >0 kr.</span
+                >
+              </div>
             </div>
           </div>
 
@@ -262,7 +291,11 @@
             lagerskat). <span id="taxAssumptionText"
               >Aktiedepot: 27% op til 79.400 kr. i årligt afkast, derefter 42%
               lagerskat.</span
-            >
+            ><br />
+            <strong>Inflation:</strong> Købekraften beregnes ved at
+            neddiskontere nettoformuen med den valgte gennemsnitlige årlige
+            inflation over hele perioden. Afkastet undervejs bruges stadig i
+            sin nominelle form.
           </div>
         </div>
       </div>
@@ -324,12 +357,17 @@
           parseFloat(document.getElementById("monthly").value) || 0;
         const rate =
           (parseFloat(document.getElementById("returnRate").value) || 0) / 100;
+        const inflationRate =
+          (parseFloat(document.getElementById("inflationRate").value) || 0) /
+          100;
         const years = parseInt(document.getElementById("years").value) || 0;
         const months = parseInt(document.getElementById("months").value) || 0;
         const payTaxWithFreshMoney = document.getElementById(
           "payTaxWithFreshMoney",
         ).checked;
         const taxMethod = document.getElementById("taxMethod").value;
+        const accrualInterval =
+          document.getElementById("accrualInterval").value;
 
         const initial = askInitial + stockInitial;
         const totalMonths = years * 12 + months;
@@ -351,32 +389,57 @@
         tableBody.innerHTML = "";
         const yearRows = [];
 
+        // Bogholderi for årets start-saldo og indskud, bruges til
+        // skatteopgørelsen som altid sker årligt uanset rentetilskrivning.
+        let askYearStart = askBalance;
+        let stockYearStart = stockBalance;
+        let stockDepositsThisYear = 0;
+
         // Måned-for-måned og år-for-år simulering
         for (let m = 1; m <= totalMonths; m++) {
           // 1. Månedligt indskud sendes 100% til Aktiedepotet
           stockBalance += monthly;
           totalNewDeposits += monthly;
+          stockDepositsThisYear += monthly;
 
-          // 2. Årlig afkast- og skatteberegning
+          // 2. Månedlig rentetilskrivning (hvis valgt) - selve afkastet
+          // tilskrives hver måned, men skatten opgøres stadig kun årligt.
+          if (accrualInterval === "monthly") {
+            const monthlyRate = rate / 12;
+            askBalance *= 1 + monthlyRate;
+            stockBalance *= 1 + monthlyRate;
+          }
+
+          // 3. Årlig afkast- og skatteberegning
           if (m % 12 === 0 || m === totalMonths) {
             const yearNumber = Math.ceil(m / 12);
             const monthsInCurrentYear = m % 12 === 0 ? 12 : m % 12;
             const periodFraction = monthsInCurrentYear / 12;
-            const currentRate = rate * periodFraction;
 
-            // --- ASK (Passiv vækst uden nye månedlige indskud) ---
-            let askGain = askBalance * currentRate;
-            askBalance += askGain;
+            let askGain, stockGain;
+
+            if (accrualInterval === "monthly") {
+              // Afkastet er allerede tilskrevet måned for måned ovenfor -
+              // årets samlede gevinst er blot ændringen i saldo.
+              askGain = askBalance - askYearStart;
+              stockGain =
+                stockBalance - stockYearStart - stockDepositsThisYear;
+            } else {
+              const currentRate = rate * periodFraction;
+
+              // --- ASK (Passiv vækst uden nye månedlige indskud) ---
+              askGain = askYearStart * currentRate;
+              askBalance = askYearStart + askGain;
+
+              // --- Aktiedepot (Inkl. løbende månedlige indskud) ---
+              // Tidsvægtet afkast beregning for det forgangne år
+              stockGain =
+                stockYearStart * currentRate +
+                stockDepositsThisYear * currentRate * 0.5;
+              stockBalance = stockYearStart + stockDepositsThisYear + stockGain;
+            }
+
             let askTax = askGain > 0 ? askGain * ASK_TAX_RATE : 0;
-
-            // --- Aktiedepot (Inkl. løbende månedlige indskud) ---
-            // Tidsvægtet afkast beregning for det forgangne år
-            let startStockBalance =
-              stockBalance - monthly * monthsInCurrentYear;
-            let stockGain =
-              startStockBalance * currentRate +
-              monthly * monthsInCurrentYear * currentRate * 0.5;
-            stockBalance += stockGain;
 
             let stockTax = 0;
             if (taxMethod === "lager" && stockGain > 0) {
@@ -411,6 +474,11 @@
               askBalance -= askTax;
               stockBalance -= stockTax;
             }
+
+            // Nulstil årets bogholderi til næste år
+            askYearStart = askBalance;
+            stockYearStart = stockBalance;
+            stockDepositsThisYear = 0;
           }
         }
 
@@ -481,6 +549,12 @@
           ? grossBalance - totalTaxPaid
           : grossBalance;
 
+        // Nettoformue i dagens købekraft, neddiskonteret med inflationen
+        // over hele perioden.
+        const totalYears = totalMonths / 12;
+        const realNetBalance =
+          netBalance / Math.pow(1 + inflationRate, totalYears);
+
         // Dynamiske overskrifter
         if (payTaxWithFreshMoney) {
           document.getElementById("labelGross").innerText = "Formue på depoter";
@@ -508,6 +582,8 @@
         );
         document.getElementById("resTotalTax").innerText =
           formatDKK(totalTaxPaid);
+        document.getElementById("resRealNet").innerText =
+          formatDKK(realNetBalance);
       }
 
       // Kopier samlet resultat
@@ -523,6 +599,8 @@
           document.getElementById("resTotalDeposits").innerText;
         const interest = document.getElementById("resInterest").innerText;
         const totalTax = document.getElementById("resTotalTax").innerText;
+        const realNetLabel = document.getElementById("labelRealNet").innerText;
+        const realNetValue = document.getElementById("resRealNet").innerText;
 
         const textToCopy = `RESULTAT ${period}
 ----------------------------------
@@ -533,7 +611,8 @@ Indledende opsparing: ${initial}
 Samlede nye indskud: ${newDeposits}
 Samlede investeringsindskud i alt: ${totalDeposits}
 Samlet optjent afkast (brutto): ${interest}
-Samlet betalt skat over perioden: ${totalTax}`;
+Samlet betalt skat over perioden: ${totalTax}
+${realNetLabel} ${realNetValue}`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
           const btn = document.getElementById("btnCopyResults");
