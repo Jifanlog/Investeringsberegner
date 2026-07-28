@@ -162,6 +162,11 @@
               />
             </div>
           </div>
+          <p class="text-xs text-slate-500 -mt-2">
+            Koblet til alderfelterne i "Tidlig Pension (FIRE)"-fanen - ændres
+            automatisk hvis du opdaterer din alder eller alder ved tidlig
+            pension der, og omvendt.
+          </p>
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -403,6 +408,11 @@
                 />
               </div>
             </div>
+            <p class="text-xs text-slate-500 -mt-2">
+              Antal år herimellem er koblet til "Periode (år)" i
+              "Opsparing & Afkast"-fanen - ændringer opdaterer automatisk
+              begge steder, og din forventede formue genindlæses.
+            </p>
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -1053,6 +1063,50 @@ ${realNetLabel} ${realNetValue}`;
         });
       }
 
+      // Holder "Periode (år)" i Opsparing-fanen og alderfelterne i FIRE-fanen
+      // synkroniseret, så "Forventet formue ved tidlig pension" aldrig bliver
+      // stående med en investeringsperiode der ikke længere passer.
+      let isSyncingHorizon = false;
+
+      function syncYearsFromFireAges() {
+        if (isSyncingHorizon) return;
+        isSyncingHorizon = true;
+
+        const currentAge =
+          parseInt(document.getElementById("fireCurrentAge").value) || 0;
+        const retireAge =
+          parseInt(document.getElementById("fireRetireAge").value) || 0;
+        const yearsToRetire = Math.max(0, retireAge - currentAge);
+
+        document.getElementById("years").value = yearsToRetire;
+        document.getElementById("months").value = 0;
+
+        calculate();
+        calculateFire();
+        useCalcResultForFire();
+
+        isSyncingHorizon = false;
+      }
+
+      function syncFireAgesFromYears() {
+        if (isSyncingHorizon) return;
+        isSyncingHorizon = true;
+
+        const years = parseInt(document.getElementById("years").value) || 0;
+        const months = parseInt(document.getElementById("months").value) || 0;
+        const currentAge =
+          parseInt(document.getElementById("fireCurrentAge").value) || 0;
+
+        document.getElementById("fireRetireAge").value =
+          currentAge + Math.round(years + months / 12);
+
+        calculate();
+        calculateFire();
+        useCalcResultForFire();
+
+        isSyncingHorizon = false;
+      }
+
       // Hent "Formue på depoter" fra "Opsparing & Afkast"-fanen ind i
       // FIRE-beregneren. Kræver lagerbeskatning + betaling af skat med friske
       // penge, da "Formue på depoter" ellers ikke afspejler den fulde,
@@ -1280,6 +1334,20 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
           }, 2000);
         });
       }
+
+      // Synkroniser investeringsperiode <-> FIRE-alder, når felterne ændres
+      document
+        .getElementById("fireCurrentAge")
+        .addEventListener("change", syncYearsFromFireAges);
+      document
+        .getElementById("fireRetireAge")
+        .addEventListener("change", syncYearsFromFireAges);
+      document
+        .getElementById("years")
+        .addEventListener("change", syncFireAgesFromYears);
+      document
+        .getElementById("months")
+        .addEventListener("change", syncFireAgesFromYears);
 
       // Kør første beregning ved indlæsning
       calculate();
