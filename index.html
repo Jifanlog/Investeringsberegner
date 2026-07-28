@@ -365,7 +365,7 @@
           </h2>
           <p class="text-slate-600 max-w-2xl mx-auto">
             Beregn om din formue rækker til at bygge bro fra tidlig pension til
-            folkepensionen, baseret på 4%-reglen og en år-for-år
+            din pension, baseret på 4%-reglen og en år-for-år
             nedsparingssimulering.
           </p>
         </div>
@@ -406,7 +406,7 @@
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1"
-                >Alder ved folkepension</label
+                >Alder ved pension</label
               >
               <input
                 type="number"
@@ -416,7 +416,9 @@
               />
               <p class="text-xs text-slate-500 mt-0.5">
                 Perioden herimellem ("broen") skal din formue selv dække, indtil
-                folkepensionen kicker ind.
+                din pension kicker ind. Kan være folkepension, ratepension
+                eller en anden fast pensionsindkomst - vælg den alder hvor
+                <em>din</em> næste faste indkomstkilde starter.
               </p>
             </div>
 
@@ -564,7 +566,7 @@
                 </div>
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                   <p class="text-xs text-blue-600 uppercase font-semibold">
-                    Formue tilbage ved folkepension
+                    Formue tilbage ved pension
                   </p>
                   <p
                     id="fireResFinalBalance"
@@ -584,7 +586,7 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-600"
-                    >Antal år broen skal dække (til folkepension):</span
+                    >Antal år broen skal dække (til pension):</span
                   >
                   <span id="fireResBridgeYears" class="font-medium text-slate-900"
                     >0 år</span
@@ -632,7 +634,7 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-600"
-                    >Restformue ved folkepension i dagens købekraft:</span
+                    >Restformue ved pension i dagens købekraft:</span
                   >
                   <span
                     id="fireResFinalBalanceReal"
@@ -649,7 +651,7 @@
               <strong>Metode:</strong> Årlige leveomkostninger fremskrives med
               den valgte inflation til pensionsalderen. Det permanente FIRE-tal
               er 25x årlige udgifter (svarende til 4%-reglen / Trinity Study).
-              Broen fra tidlig pension til folkepension simuleres år for år:
+              Broen fra tidlig pension til pension simuleres år for år:
               hvert år hæves de inflationsjusterede leveomkostninger fra
               formuen, hvorefter resten forrentes med det valgte afkast under
               nedsparing. Kontantbufferen indgår ikke i broberegningen - den er
@@ -663,7 +665,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div class="flex justify-between items-center border-b pb-3 mb-4">
             <h2 class="text-lg font-semibold text-slate-900">
-              Nedsparing år-for-år (broen til folkepension)
+              Nedsparing år-for-år (broen til pension)
             </h2>
             <button
               onclick="copyFireTable()"
@@ -1123,7 +1125,7 @@ ${realNetLabel} ${realNetValue}`;
           bufferBalance *= 1 + bufferMonthlyRate;
         }
 
-        // Nedsparingssimulering: broen fra tidlig pension til folkepension.
+        // Nedsparingssimulering: broen fra tidlig pension til pension.
         // Hvert år hæves de inflationsjusterede leveomkostninger, hvorefter
         // resten forrentes med afkastet under nedsparing.
         const tableBody = document.getElementById("fireYearlyTableBody");
@@ -1237,7 +1239,7 @@ Kontant buffer ved tidlig pension: ${buffer}
 Samlet formue ved tidlig pension: ${totalWealth}
 Samlet formue i dagens købekraft: ${totalWealthReal}
 
-Formue tilbage ved folkepension: ${finalBalance}
+Formue tilbage ved pension: ${finalBalance}
 Restformue i dagens købekraft: ${finalBalanceReal}`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
