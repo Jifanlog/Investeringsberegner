@@ -35,6 +35,13 @@
         >
           🎯 Tidlig Pension (FIRE)
         </button>
+        <button
+          id="tabBtnReal"
+          onclick="switchTab('real')"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-white text-slate-600 border border-slate-300 hover:bg-slate-50"
+        >
+          💰 Dagens Kroner (uden inflation)
+        </button>
       </div>
 
       <div id="tabAccumulation" class="space-y-8">
@@ -360,6 +367,377 @@
           </table>
         </div>
       </div>
+      </div>
+
+      <!-- Dagens Kroner / Realt afkast Tab -->
+      <div id="tabReal" class="space-y-8 hidden">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+            Opsparing i Dagens Kroner
+          </h2>
+          <p class="text-slate-600 max-w-2xl mx-auto">
+            Samme beregning som "Opsparing & Afkast", men alle beløb vises i
+            dagens købekraft. Du behøver derfor ikke tænke på inflation, når du
+            sammenligner med dit forbrug i dag.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          <!-- Input Form -->
+          <div
+            class="md:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4"
+          >
+            <div class="flex justify-between items-center border-b pb-2">
+              <h2 class="text-lg font-semibold text-slate-900">
+                Dine Oplysninger
+              </h2>
+              <button
+                type="button"
+                onclick="copyInputsToReal()"
+                id="btnCopyInputsToReal"
+                class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1 px-3 rounded border border-slate-300 transition-colors"
+              >
+                Hent fra Opsparing
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Aktiesparekonto (kr.)</label
+              >
+              <input
+                type="number"
+                id="realAskInitial"
+                value="193000"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Aktiedepot (kr.)</label
+              >
+              <input
+                type="number"
+                id="realStockInitial"
+                value="283000"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Beskatningsform (Aktiedepot)</label
+              >
+              <select
+                id="realTaxMethod"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                <option value="lager" selected>
+                  Lagerbeskatning (årlig skat af urealiseret afkast)
+                </option>
+                <option value="realisation">
+                  Realisationsbeskatning (skat ved salg)
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Månedlig indbetaling i dagens kroner (kr.)</label
+              >
+              <input
+                type="number"
+                id="realMonthly"
+                value="6000"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <label
+                class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer mt-2"
+              >
+                <input
+                  type="checkbox"
+                  id="realIndexDeposits"
+                  checked
+                  class="rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span>Hæv indbetalingen med inflationen hvert år</span>
+              </label>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Afkrydset: du indbetaler det samme i <em>købekraft</em> hvert år
+                (fx 6.000 kr. i dag, 6.120 kr. næste år ved 2% inflation). Ikke
+                afkrydset: et fast kronebeløb, som altså bliver mindre værd år for
+                år.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Forventet årligt afkast (%)</label
+                >
+                <input
+                  type="number"
+                  id="realReturnRate"
+                  value="7"
+                  step="0.1"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <p class="text-xs text-slate-500 mt-0.5">Nominelt, før inflation.</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Forventet årlig inflation (%)</label
+                >
+                <input
+                  type="number"
+                  id="realInflationRate"
+                  value="2"
+                  step="0.1"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 -mt-2">
+              Realt afkast før skat:
+              <span id="realRateLabel" class="font-medium text-slate-700"></span>
+            </p>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Periode (År)</label
+                >
+                <input
+                  type="number"
+                  id="realYears"
+                  value="20"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Måneder</label
+                >
+                <input
+                  type="number"
+                  id="realMonths"
+                  value="0"
+                  min="0"
+                  max="11"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Interval af rentetilskrivning</label
+              >
+              <select
+                id="realAccrualInterval"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                <option value="monthly" selected>Månedlig</option>
+                <option value="annual">Årlig</option>
+              </select>
+            </div>
+
+            <div class="pt-2">
+              <label
+                class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  id="realPayTaxWithFreshMoney"
+                  checked
+                  class="rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span>Betal skat med friske penge (udefra)</span>
+              </label>
+              <p class="text-xs text-slate-500 mt-1">
+                Hvis ikke afkrydset, trækkes skatten direkte fra depoternes værdi
+                hvert år.
+              </p>
+            </div>
+
+            <button
+              onclick="calculateReal()"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm"
+            >
+              Beregn i Dagens Kroner
+            </button>
+          </div>
+
+          <!-- Results Display -->
+          <div
+            class="md:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col"
+          >
+            <div>
+              <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <h2 class="text-lg font-semibold text-slate-900">
+                  Resultat i dagens kroner
+                  <span
+                    id="realPeriodLabel"
+                    class="text-sm font-normal text-slate-500"
+                  ></span>
+                </h2>
+                <button
+                  onclick="copyRealResults()"
+                  id="btnCopyRealResults"
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1 px-3 rounded border border-slate-300 transition-colors flex items-center gap-1"
+                >
+                  📋 Kopier resultat
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p
+                    id="realLabelGross"
+                    class="text-xs text-slate-500 uppercase font-semibold"
+                  >
+                    Formue på depoter
+                  </p>
+                  <p
+                    id="realResGross"
+                    class="text-2xl font-bold text-slate-800 mt-1"
+                  >
+                    0 kr.
+                  </p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                  <p
+                    id="realLabelNet"
+                    class="text-xs text-blue-600 uppercase font-semibold"
+                  >
+                    Netto (minus friske skatteudlæg)
+                  </p>
+                  <p
+                    id="realResNet"
+                    class="text-2xl font-bold text-blue-900 mt-1"
+                  >
+                    0 kr.
+                  </p>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-sm border-t pt-4">
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Indledende opsparing:</span>
+                  <span id="realResInitial" class="font-medium text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600">Samlede nye indskud:</span>
+                  <span id="realResNewDeposits" class="font-medium text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600 font-medium"
+                    >Samlede investeringsindskud i alt:</span
+                  >
+                  <span id="realResTotalDeposits" class="font-bold text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600"
+                    >Realt afkast (brutto, over inflation):</span
+                  >
+                  <span id="realResInterest" class="font-medium text-emerald-600"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600"
+                    >Samlet betalt skat over perioden:</span
+                  >
+                  <span id="realResTotalTax" class="font-medium text-rose-600"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600"
+                    >Netto med den simple metode
+                    <span id="realNaiveRateLabel"></span>:</span
+                  >
+                  <span id="realResNaiveNet" class="font-medium text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-600"
+                    >Den simple metode overvurderer med:</span
+                  >
+                  <span id="realResNaiveDiff" class="font-medium text-rose-600"
+                    >0 kr.</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="mt-6 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 space-y-1"
+            >
+              <p>
+                <strong>Hvorfor ikke bare trække inflationen fra afkastet?</strong>
+                Tommelfingerreglen "7% − 2% = 5% realt afkast" er tæt på (præcist:
+                1,07 / 1,02 − 1 ≈ 4,9%), og regner man i realt afkast, er
+                resultatet i dagens kroner. Så skal man ikke også fremskrive
+                fremtidens forbrug med inflation.
+              </p>
+              <p>
+                <strong>Men skatten betales af det nominelle afkast.</strong>
+                Også den del af afkastet, der blot dækker inflationen, beskattes.
+                Derfor regner denne side nominelt bagved (skat af hele afkastet),
+                og omregner derefter alle beløb til dagens kroner. Skattegrænsen
+                (79.400 kr.) antages at stige med inflationen. Den simple metode
+                beskatter kun det reale afkast og giver derfor et for pænt
+                resultat.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Breakdown Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h2 class="text-lg font-semibold text-slate-900">
+              År-for-år i dagens kroner
+            </h2>
+            <button
+              onclick="copyRealTable()"
+              id="btnCopyRealTable"
+              class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded border border-slate-300 transition-colors flex items-center gap-1"
+            >
+              📊 Kopier tabel (til Excel)
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table
+              id="realYearlyTable"
+              class="w-full text-xs text-left text-slate-600"
+            >
+              <thead class="bg-slate-100 text-slate-700 font-semibold uppercase">
+                <tr>
+                  <th class="py-3 px-2">År</th>
+                  <th class="py-3 px-2">ASK Saldo</th>
+                  <th class="py-3 px-2">ASK Skat (17%)</th>
+                  <th class="py-3 px-2">Depot Saldo</th>
+                  <th class="py-3 px-2">Depot Afkast</th>
+                  <th class="py-3 px-2" id="realDepotSkatHeader">Depot Skat</th>
+                  <th class="py-3 px-2 text-right">Årets Skat (I alt)</th>
+                </tr>
+              </thead>
+              <tbody id="realYearlyTableBody" class="divide-y divide-slate-100">
+                <!-- Genereres af JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- FIRE / Tidlig Pension Tab -->
@@ -752,12 +1130,14 @@
         }).format(amount);
       }
 
-      // Skift mellem "Opsparing & Afkast" og "Tidlig Pension (FIRE)"
+      // Skift mellem fanerne "Opsparing & Afkast", "Tidlig Pension (FIRE)"
+      // og "Dagens Kroner"
       function switchTab(tab) {
-        const accDiv = document.getElementById("tabAccumulation");
-        const fireDiv = document.getElementById("tabFire");
-        const accBtn = document.getElementById("tabBtnAccumulation");
-        const fireBtn = document.getElementById("tabBtnFire");
+        const tabs = {
+          accumulation: ["tabAccumulation", "tabBtnAccumulation"],
+          fire: ["tabFire", "tabBtnFire"],
+          real: ["tabReal", "tabBtnReal"],
+        };
 
         const activeClasses = ["bg-blue-600", "text-white", "shadow-sm"];
         const inactiveClasses = [
@@ -768,20 +1148,18 @@
           "hover:bg-slate-50",
         ];
 
-        if (tab === "fire") {
-          accDiv.classList.add("hidden");
-          fireDiv.classList.remove("hidden");
-          accBtn.classList.remove(...activeClasses);
-          accBtn.classList.add(...inactiveClasses);
-          fireBtn.classList.remove(...inactiveClasses);
-          fireBtn.classList.add(...activeClasses);
-        } else {
-          fireDiv.classList.add("hidden");
-          accDiv.classList.remove("hidden");
-          fireBtn.classList.remove(...activeClasses);
-          fireBtn.classList.add(...inactiveClasses);
-          accBtn.classList.remove(...inactiveClasses);
-          accBtn.classList.add(...activeClasses);
+        for (const [name, [divId, btnId]] of Object.entries(tabs)) {
+          const div = document.getElementById(divId);
+          const btn = document.getElementById(btnId);
+          if (name === tab) {
+            div.classList.remove("hidden");
+            btn.classList.remove(...inactiveClasses);
+            btn.classList.add(...activeClasses);
+          } else {
+            div.classList.add("hidden");
+            btn.classList.remove(...activeClasses);
+            btn.classList.add(...inactiveClasses);
+          }
         }
       }
 
@@ -797,6 +1175,11 @@
         taxMethod,
         accrualInterval,
         payTaxWithFreshMoney,
+        // Valgfrit (bruges af "Dagens Kroner"-fanen): ved inflation > 0
+        // stiger progressionsgrænsen med inflationen, indbetalingen kan
+        // indekseres, og totaler returneres også i dagens kroner.
+        inflation = 0,
+        indexDeposits = false,
       }) {
         // Skattekonstanter
         const ASK_TAX_RATE = 0.17;
@@ -810,7 +1193,10 @@
 
         let totalTaxPaid = 0;
         let totalNewDeposits = 0;
+        let totalTaxPaidReal = 0;
+        let totalNewDepositsReal = 0;
         const yearRows = [];
+        const deflator = (m) => Math.pow(1 + inflation, m / 12);
 
         // Bogholderi for årets start-saldo og indskud, bruges til
         // skatteopgørelsen som altid sker årligt uanset rentetilskrivning.
@@ -821,9 +1207,12 @@
         // Måned-for-måned og år-for-år simulering
         for (let m = 1; m <= totalMonths; m++) {
           // 1. Månedligt indskud sendes 100% til Aktiedepotet
-          stockBalance += monthly;
-          totalNewDeposits += monthly;
-          stockDepositsThisYear += monthly;
+          const indexFactor = Math.pow(1 + inflation, Math.floor((m - 1) / 12));
+          const deposit = indexDeposits ? monthly * indexFactor : monthly;
+          stockBalance += deposit;
+          totalNewDeposits += deposit;
+          totalNewDepositsReal += deposit / indexFactor;
+          stockDepositsThisYear += deposit;
 
           // 2. Månedlig rentetilskrivning (hvis valgt) - selve afkastet
           // tilskrives hver måned, men skatten opgøres stadig kun årligt.
@@ -864,14 +1253,18 @@
 
             let askTax = askGain > 0 ? askGain * ASK_TAX_RATE : 0;
 
+            // Progressionsgrænsen reguleres med inflationen (0 som standard)
+            const bracket =
+              STOCK_BRACKET * Math.pow(1 + inflation, yearNumber - 1);
+
             let stockTax = 0;
             if (taxMethod === "lager" && stockGain > 0) {
-              if (stockGain <= STOCK_BRACKET * periodFraction) {
+              if (stockGain <= bracket * periodFraction) {
                 stockTax = stockGain * LOW_TAX_RATE;
               } else {
-                let lowTaxPart = STOCK_BRACKET * periodFraction * LOW_TAX_RATE;
+                let lowTaxPart = bracket * periodFraction * LOW_TAX_RATE;
                 let highTaxPart =
-                  (stockGain - STOCK_BRACKET * periodFraction) * HIGH_TAX_RATE;
+                  (stockGain - bracket * periodFraction) * HIGH_TAX_RATE;
                 stockTax = lowTaxPart + highTaxPart;
               }
             }
@@ -880,6 +1273,7 @@
 
             let totalYearTax = askTax + stockTax;
             totalTaxPaid += totalYearTax;
+            totalTaxPaidReal += totalYearTax / deflator(m);
 
             // Gem årets tal til senere rendering af tabellen
             yearRows.push({
@@ -890,6 +1284,7 @@
               stockGain,
               stockTax,
               totalYearTax,
+              month: m,
             });
 
             // Håndtering af skattebetaling
@@ -910,18 +1305,22 @@
         if (taxMethod === "realisation") {
           const stockCostBasis = stockInitial + totalNewDeposits;
           const totalStockGain = stockBalance - stockCostBasis;
+          const saleBracket =
+            STOCK_BRACKET *
+            Math.pow(1 + inflation, Math.max(0, Math.ceil(totalMonths / 12) - 1));
           let saleTax = 0;
           if (totalStockGain > 0) {
-            if (totalStockGain <= STOCK_BRACKET) {
+            if (totalStockGain <= saleBracket) {
               saleTax = totalStockGain * LOW_TAX_RATE;
             } else {
               saleTax =
-                STOCK_BRACKET * LOW_TAX_RATE +
-                (totalStockGain - STOCK_BRACKET) * HIGH_TAX_RATE;
+                saleBracket * LOW_TAX_RATE +
+                (totalStockGain - saleBracket) * HIGH_TAX_RATE;
             }
           }
 
           totalTaxPaid += saleTax;
+          totalTaxPaidReal += saleTax / deflator(totalMonths);
 
           if (!payTaxWithFreshMoney) {
             stockBalance -= saleTax;
@@ -940,6 +1339,9 @@
           totalTaxPaid,
           totalNewDeposits,
           yearRows,
+          totalTaxPaidReal,
+          totalNewDepositsReal,
+          realDeflator: deflator(totalMonths),
         };
       }
 
@@ -1532,6 +1934,219 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
         });
       }
 
+      // "Dagens Kroner"-fanen: simuleringen kører nominelt (så skatten
+      // beregnes af hele det nominelle afkast, som i virkeligheden), og alle
+      // beløb omregnes derefter til dagens købekraft.
+      function calculateReal() {
+        const askInitial =
+          parseFloat(document.getElementById("realAskInitial").value) || 0;
+        const stockInitial =
+          parseFloat(document.getElementById("realStockInitial").value) || 0;
+        const monthly =
+          parseFloat(document.getElementById("realMonthly").value) || 0;
+        const rate =
+          (parseFloat(document.getElementById("realReturnRate").value) || 0) /
+          100;
+        const inflation =
+          (parseFloat(document.getElementById("realInflationRate").value) ||
+            0) / 100;
+        const years =
+          parseInt(document.getElementById("realYears").value) || 0;
+        const months =
+          parseInt(document.getElementById("realMonths").value) || 0;
+        const payTaxWithFreshMoney = document.getElementById(
+          "realPayTaxWithFreshMoney",
+        ).checked;
+        const indexDeposits =
+          document.getElementById("realIndexDeposits").checked;
+        const taxMethod = document.getElementById("realTaxMethod").value;
+        const accrualInterval = document.getElementById(
+          "realAccrualInterval",
+        ).value;
+
+        const initial = askInitial + stockInitial;
+        const totalMonths = years * 12 + months;
+
+        const sim = simulateAccumulation({
+          askInitial,
+          stockInitial,
+          monthly,
+          rate,
+          totalMonths,
+          taxMethod,
+          accrualInterval,
+          payTaxWithFreshMoney,
+          inflation,
+          indexDeposits,
+        });
+
+        // Den simple metode: afkast minus inflation, uden inflation i øvrigt
+        const naiveRate = rate - inflation;
+        const naiveSim = simulateAccumulation({
+          askInitial,
+          stockInitial,
+          monthly,
+          rate: naiveRate,
+          totalMonths,
+          taxMethod,
+          accrualInterval,
+          payTaxWithFreshMoney,
+        });
+
+        // Render tabellen i dagens kroner
+        const tableBody = document.getElementById("realYearlyTableBody");
+        tableBody.innerHTML = "";
+        for (const r of sim.yearRows) {
+          const d = Math.pow(1 + inflation, r.month / 12);
+          const row = `
+                        <tr class="hover:bg-slate-50 border-b">
+                            <td class="py-2.5 px-2 font-medium">${r.yearNumber}</td>
+                            <td class="py-2.5 px-2">${formatDKK(r.askBalance / d)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(r.askTax / d)}</td>
+                            <td class="py-2.5 px-2">${formatDKK(r.stockBalance / d)}</td>
+                            <td class="py-2.5 px-2 text-emerald-600">${formatDKK(r.stockGain / d)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(r.stockTax / d)}</td>
+                            <td class="py-2.5 px-2 font-bold text-right text-slate-800">${formatDKK(r.totalYearTax / d)}</td>
+                        </tr>
+                    `;
+          tableBody.innerHTML += row;
+        }
+
+        document.getElementById("realDepotSkatHeader").innerText =
+          taxMethod === "realisation" ? "Depot Skat (ved salg)" : "Depot Skat";
+
+        // Sammentælling i dagens kroner
+        const grossReal =
+          (sim.askBalance + sim.stockBalance) / sim.realDeflator;
+        const totalDepositsReal = initial + sim.totalNewDepositsReal;
+        const netReal = payTaxWithFreshMoney
+          ? grossReal - sim.totalTaxPaidReal
+          : grossReal;
+
+        const naiveGross = naiveSim.askBalance + naiveSim.stockBalance;
+        const naiveNet = payTaxWithFreshMoney
+          ? naiveGross - naiveSim.totalTaxPaid
+          : naiveGross;
+
+        if (payTaxWithFreshMoney) {
+          document.getElementById("realLabelGross").innerText =
+            "Formue på depoter";
+          document.getElementById("realLabelNet").innerText =
+            "Netto (minus friske skatteudlæg)";
+        } else {
+          document.getElementById("realLabelGross").innerText =
+            "Formue (uden skat)";
+          document.getElementById("realLabelNet").innerText =
+            "Formue på depoter (efter skat)";
+        }
+
+        const pct = (x) => (x * 100).toFixed(1).replace(".", ",") + "%";
+        document.getElementById("realRateLabel").innerText =
+          `${pct((1 + rate) / (1 + inflation) - 1)} (≈ ${pct(rate)} − ${pct(inflation)})`;
+        document.getElementById("realNaiveRateLabel").innerText =
+          `(${pct(rate)} − ${pct(inflation)} = ${pct(naiveRate)})`;
+
+        document.getElementById("realPeriodLabel").innerText =
+          `(${years} år og ${months} mdr.)`;
+        document.getElementById("realResGross").innerText =
+          formatDKK(grossReal);
+        document.getElementById("realResNet").innerText = formatDKK(netReal);
+        document.getElementById("realResInitial").innerText =
+          formatDKK(initial);
+        document.getElementById("realResNewDeposits").innerText = formatDKK(
+          sim.totalNewDepositsReal,
+        );
+        document.getElementById("realResTotalDeposits").innerText =
+          formatDKK(totalDepositsReal);
+        document.getElementById("realResInterest").innerText = formatDKK(
+          grossReal - totalDepositsReal,
+        );
+        document.getElementById("realResTotalTax").innerText = formatDKK(
+          sim.totalTaxPaidReal,
+        );
+        document.getElementById("realResNaiveNet").innerText =
+          formatDKK(naiveNet);
+        document.getElementById("realResNaiveDiff").innerText = formatDKK(
+          naiveNet - netReal,
+        );
+      }
+
+      // Kopier input fra "Opsparing & Afkast"-fanen til "Dagens Kroner"
+      function copyInputsToReal() {
+        const pairs = [
+          ["askInitial", "realAskInitial"],
+          ["stockInitial", "realStockInitial"],
+          ["taxMethod", "realTaxMethod"],
+          ["monthly", "realMonthly"],
+          ["returnRate", "realReturnRate"],
+          ["inflationRate", "realInflationRate"],
+          ["years", "realYears"],
+          ["months", "realMonths"],
+          ["accrualInterval", "realAccrualInterval"],
+        ];
+        for (const [from, to] of pairs) {
+          document.getElementById(to).value =
+            document.getElementById(from).value;
+        }
+        document.getElementById("realPayTaxWithFreshMoney").checked =
+          document.getElementById("payTaxWithFreshMoney").checked;
+        calculateReal();
+      }
+
+      // Kopier "Dagens Kroner"-resultat
+      function copyRealResults() {
+        const get = (id) => document.getElementById(id).innerText;
+        const textToCopy = `RESULTAT I DAGENS KRONER ${get("realPeriodLabel")}
+----------------------------------
+${get("realLabelGross")}: ${get("realResGross")}
+${get("realLabelNet")}: ${get("realResNet")}
+
+Indledende opsparing: ${get("realResInitial")}
+Samlede nye indskud: ${get("realResNewDeposits")}
+Samlede investeringsindskud i alt: ${get("realResTotalDeposits")}
+Realt afkast (brutto, over inflation): ${get("realResInterest")}
+Samlet betalt skat over perioden: ${get("realResTotalTax")}
+
+Netto med den simple metode ${get("realNaiveRateLabel")}: ${get("realResNaiveNet")}
+Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const btn = document.getElementById("btnCopyRealResults");
+          btn.innerText = "✓ Kopieret!";
+          setTimeout(() => {
+            btn.innerText = "📋 Kopier resultat";
+          }, 2000);
+        });
+      }
+
+      // Kopier "Dagens Kroner"-tabel i Tab-separeret format (til Excel)
+      function copyRealTable() {
+        const table = document.getElementById("realYearlyTable");
+        let tsv = [];
+
+        let headers = [];
+        for (let cell of table.querySelectorAll("thead th")) {
+          headers.push(cell.innerText.trim());
+        }
+        tsv.push(headers.join("\t"));
+
+        for (let row of table.querySelectorAll("tbody tr")) {
+          let rowData = [];
+          for (let cell of row.querySelectorAll("td")) {
+            rowData.push(cell.innerText.trim());
+          }
+          tsv.push(rowData.join("\t"));
+        }
+
+        navigator.clipboard.writeText(tsv.join("\n")).then(() => {
+          const btn = document.getElementById("btnCopyRealTable");
+          btn.innerText = "✓ Kopieret!";
+          setTimeout(() => {
+            btn.innerText = "📊 Kopier tabel (til Excel)";
+          }, 2000);
+        });
+      }
+
       // Synkroniser investeringsperiode <-> FIRE-alder, når felterne ændres
       document
         .getElementById("fireCurrentAge")
@@ -1549,6 +2164,7 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
       // Kør første beregning ved indlæsning
       calculate();
       useCalcResultForFire();
+      calculateReal();
     </script>
   </body>
 </html>
