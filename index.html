@@ -452,6 +452,20 @@
                 value="6000"
                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
+              <label class="block text-sm font-medium text-slate-700 mb-1 mt-3"
+                >Øg den månedlige indbetaling hvert år med (kr.)</label
+              >
+              <input
+                type="number"
+                id="realMonthlyIncrease"
+                value="0"
+                placeholder="fx 500"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <p class="text-xs text-slate-500 mt-0.5">
+                Fx 500 kr.: 6.000 kr./md. i år 1, 6.500 kr./md. i år 2, 7.000
+                kr./md. i år 3 osv. (i dagens kroner).
+              </p>
               <label
                 class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer mt-2"
               >
@@ -1180,6 +1194,8 @@
         // indekseres, og totaler returneres også i dagens kroner.
         inflation = 0,
         indexDeposits = false,
+        // Fast beløb som den månedlige indbetaling øges med hvert år
+        monthlyIncrease = 0,
       }) {
         // Skattekonstanter
         const ASK_TAX_RATE = 0.17;
@@ -1207,8 +1223,10 @@
         // Måned-for-måned og år-for-år simulering
         for (let m = 1; m <= totalMonths; m++) {
           // 1. Månedligt indskud sendes 100% til Aktiedepotet
-          const indexFactor = Math.pow(1 + inflation, Math.floor((m - 1) / 12));
-          const deposit = indexDeposits ? monthly * indexFactor : monthly;
+          const yearIndex = Math.floor((m - 1) / 12);
+          const indexFactor = Math.pow(1 + inflation, yearIndex);
+          const baseDeposit = monthly + monthlyIncrease * yearIndex;
+          const deposit = indexDeposits ? baseDeposit * indexFactor : baseDeposit;
           stockBalance += deposit;
           totalNewDeposits += deposit;
           totalNewDepositsReal += deposit / indexFactor;
@@ -1959,6 +1977,8 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
         ).checked;
         const indexDeposits =
           document.getElementById("realIndexDeposits").checked;
+        const monthlyIncrease =
+          parseFloat(document.getElementById("realMonthlyIncrease").value) || 0;
         const taxMethod = document.getElementById("realTaxMethod").value;
         const accrualInterval = document.getElementById(
           "realAccrualInterval",
@@ -1978,6 +1998,7 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
           payTaxWithFreshMoney,
           inflation,
           indexDeposits,
+          monthlyIncrease,
         });
 
         // Den simple metode: afkast minus inflation, uden inflation i øvrigt
@@ -1991,6 +2012,7 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
           taxMethod,
           accrualInterval,
           payTaxWithFreshMoney,
+          monthlyIncrease,
         });
 
         // Render tabellen i dagens kroner
