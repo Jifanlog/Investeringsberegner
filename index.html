@@ -176,11 +176,6 @@
               />
             </div>
           </div>
-          <p class="text-xs text-slate-500 -mt-2">
-            Koblet til alderfelterne i "Tidlig Pension (FIRE)"-fanen - ændres
-            automatisk hvis du opdaterer din alder eller alder ved tidlig
-            pension der, og omvendt.
-          </p>
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -550,6 +545,11 @@
                 />
               </div>
             </div>
+            <p class="text-xs text-slate-500 -mt-2">
+              Koblet til alderfelterne i "Tidlig Pension (FIRE)"-fanen - ændres
+              automatisk hvis du opdaterer din alder eller alder ved tidlig
+              pension der, og omvendt.
+            </p>
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1"
@@ -1136,7 +1136,9 @@
           <p class="text-slate-600 max-w-2xl mx-auto">
             Beregn om din formue rækker til at bygge bro fra tidlig pension til
             din pension, baseret på 4%-reglen og en år-for-år
-            nedsparingssimulering.
+            nedsparingssimulering. Alle beløb er i dagens kroner, og formuen
+            vokser med det reale afkast (afkast minus inflation). Tallene hentes
+            fra "Dagens Kroner"-fanen.
           </p>
         </div>
 
@@ -1203,8 +1205,8 @@
               </div>
             </div>
             <p class="text-xs text-slate-500 -mt-2">
-              Antal år herimellem er koblet til "Periode (år)" i
-              "Opsparing & Afkast"-fanen - ændringer opdaterer automatisk
+              Antal år herimellem er koblet til "Periode (År)" i
+              "Dagens Kroner"-fanen - ændringer opdaterer automatisk
               begge steder, og din forventede formue genindlæses.
             </p>
 
@@ -1240,7 +1242,7 @@
 
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1"
-                >Forventet formue ved tidlig pension (kr.)</label
+                >Forventet formue ved tidlig pension (dagens kr.)</label
               >
               <div class="flex gap-2">
                 <input
@@ -1259,10 +1261,9 @@
                 </button>
               </div>
               <p class="text-xs text-slate-500 mt-0.5">
-                Hentes automatisk fra "Formue på depoter" i "Opsparing &
-                Afkast"-fanen. Kræver lagerbeskatning og at "Betal skat med
-                friske penge" er slået til (ellers indeholder saldoen ikke den
-                fulde, ubeskattede formue) - eller indtast selv.
+                Hentes automatisk fra resultatet i "Dagens Kroner"-fanen
+                (depotværdien i dagens kroner; ved realisationsbeskatning efter
+                skatten ved salg) - eller indtast selv.
               </p>
             </div>
 
@@ -1279,8 +1280,7 @@
                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <p class="text-xs text-slate-500 mt-0.5">
-                  Bruges også som forventet renter/udbytte-rate af den
-                  magiske knap ovenfor.
+                  Nominelt, før inflation.
                 </p>
               </div>
               <div>
@@ -1296,6 +1296,10 @@
                 />
               </div>
             </div>
+            <p class="text-xs text-slate-500 -mt-2">
+              Realt afkast (bruges i nedsparingen og af den magiske knap):
+              <span id="fireRealRateLabel" class="font-medium text-slate-700"></span>
+            </p>
 
             <div class="pt-2 border-t">
               <p class="text-sm font-medium text-slate-700 mb-2">
@@ -1363,7 +1367,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <p class="text-xs text-slate-500 uppercase font-semibold">
-                    Årlige udgifter ved pension
+                    Årlige udgifter (dagens kr.)
                   </p>
                   <p
                     id="fireResExpenseAtRetirement"
@@ -1374,7 +1378,7 @@
                 </div>
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                   <p class="text-xs text-blue-600 uppercase font-semibold">
-                    Formue tilbage ved pension
+                    Formue tilbage ved pension (dagens kr.)
                   </p>
                   <p
                     id="fireResFinalBalance"
@@ -1430,39 +1434,20 @@
                     >0 kr.</span
                   >
                 </div>
-                <div class="flex justify-between border-t pt-2">
-                  <span class="text-slate-600"
-                    >Samlet formue i dagens købekraft:</span
-                  >
-                  <span
-                    id="fireResTotalWealthReal"
-                    class="font-bold text-slate-900"
-                    >0 kr.</span
-                  >
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-slate-600"
-                    >Restformue ved pension i dagens købekraft:</span
-                  >
-                  <span
-                    id="fireResFinalBalanceReal"
-                    class="font-medium text-slate-900"
-                    >0 kr.</span
-                  >
-                </div>
               </div>
             </div>
 
             <div
               class="mt-6 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800"
             >
-              <strong>Metode:</strong> Årlige leveomkostninger fremskrives med
-              den valgte inflation til pensionsalderen. Det permanente FIRE-tal
-              er 25x årlige udgifter (svarende til 4%-reglen / Trinity Study).
-              Broen fra tidlig pension til pension simuleres år for år:
-              hvert år hæves de inflationsjusterede leveomkostninger fra
-              formuen, hvorefter resten forrentes med det valgte afkast under
-              nedsparing. Kontantbufferen indgår ikke i broberegningen - den er
+              <strong>Metode:</strong> Alt regnes i dagens kroner, så dine
+              leveomkostninger forbliver det samme beløb hvert år. Til gengæld
+              forrentes formuen kun med det reale afkast, (1 + afkast) / (1 +
+              inflation) − 1 ≈ afkast − inflation. Det permanente FIRE-tal er 25x
+              årlige udgifter (svarende til 4%-reglen / Trinity Study). Broen fra
+              tidlig pension til pension simuleres år for år: hvert år hæves
+              leveomkostningerne fra formuen, hvorefter resten forrentes med det
+              reale afkast. Bufferen er omregnet til dagens kroner. Kontantbufferen indgår ikke i broberegningen - den er
               tænkt som en ekstra buffer mod at skulle sælge investeringer med
               tab i et børskrak (sequence-of-returns risiko).
             </div>
@@ -1495,8 +1480,7 @@
                   <th class="py-3 px-2">Formue (start)</th>
                   <th class="py-3 px-2">Hævning (år)</th>
                   <th class="py-3 px-2">Afkast</th>
-                  <th class="py-3 px-2">Formue (slut)</th>
-                  <th class="py-3 px-2 text-right">Realværdi (i dag)</th>
+                  <th class="py-3 px-2 text-right">Formue (slut)</th>
                 </tr>
               </thead>
               <tbody id="fireYearlyTableBody" class="divide-y divide-slate-100">
@@ -1851,9 +1835,6 @@
           formatDKK(totalTaxPaid);
         document.getElementById("resRealNet").innerText =
           formatDKK(realNetBalance);
-
-        // Gemmes så FIRE-beregneren kan hente "Formue på depoter" med ét klik
-        window.__lastGrossBalance = grossBalance;
       }
 
       // Kopier samlet resultat
@@ -1940,10 +1921,10 @@ ${realNetLabel} ${realNetValue}`;
           parseInt(document.getElementById("fireRetireAge").value) || 0;
         const yearsToRetire = Math.max(0, retireAge - currentAge);
 
-        document.getElementById("years").value = yearsToRetire;
-        document.getElementById("months").value = 0;
+        document.getElementById("realYears").value = yearsToRetire;
+        document.getElementById("realMonths").value = 0;
 
-        calculate();
+        calculateReal();
         calculateFire();
         useCalcResultForFire();
 
@@ -1954,88 +1935,78 @@ ${realNetLabel} ${realNetValue}`;
         if (isSyncingHorizon) return;
         isSyncingHorizon = true;
 
-        const years = parseInt(document.getElementById("years").value) || 0;
-        const months = parseInt(document.getElementById("months").value) || 0;
+        const years =
+          parseInt(document.getElementById("realYears").value) || 0;
+        const months =
+          parseInt(document.getElementById("realMonths").value) || 0;
         const currentAge =
           parseInt(document.getElementById("fireCurrentAge").value) || 0;
 
         document.getElementById("fireRetireAge").value =
           currentAge + Math.round(years + months / 12);
 
-        calculate();
+        calculateReal();
         calculateFire();
         useCalcResultForFire();
 
         isSyncingHorizon = false;
       }
 
-      // Hent "Formue på depoter" fra "Opsparing & Afkast"-fanen ind i
-      // FIRE-beregneren. Kræver lagerbeskatning + betaling af skat med friske
-      // penge, da "Formue på depoter" ellers ikke afspejler den fulde,
-      // ubeskattede/ubetalte depotsaldo (fx en udestående salgsskat ved
-      // realisationsbeskatning, eller en saldo der allerede er reduceret med
-      // skat).
+      // Hent formuen i dagens kroner og inflationen fra "Dagens Kroner"-fanen
+      // ind i FIRE-beregneren.
       function useCalcResultForFire() {
-        const taxMethod = document.getElementById("taxMethod").value;
-        const payTaxWithFreshMoney = document.getElementById(
-          "payTaxWithFreshMoney",
-        ).checked;
-        const btn = document.getElementById("btnUseCalcResult");
-
-        if (taxMethod !== "lager" || !payTaxWithFreshMoney) {
-          if (btn) {
-            const original = btn.innerText;
-            btn.innerText = "⚠️ Kræver lagerskat + friske penge";
-            setTimeout(() => {
-              btn.innerText = original;
-            }, 2500);
-          }
-          return;
-        }
-
-        const val = window.__lastGrossBalance || 0;
+        const val = window.__lastRealPortfolio || 0;
         document.getElementById("firePortfolio").value = Math.round(val);
+        document.getElementById("fireInflation").value =
+          document.getElementById("realInflationRate").value;
         calculateFire();
+      }
+
+      // Realt afkast under nedsparing: (1 + afkast) / (1 + inflation) - 1
+      function getFireRealRate() {
+        const returnRate =
+          (parseFloat(document.getElementById("fireReturnRate").value) || 0) /
+          100;
+        const inflation =
+          (parseFloat(document.getElementById("fireInflation").value) || 0) /
+          100;
+        return (1 + returnRate) / (1 + inflation) - 1;
       }
 
       // Den magiske knap: finder det første år hvor det forventede afkast
       // (renter/udbytte) af formuen alene kan dække de inflationsjusterede
-      // leveomkostninger - dvs. hovedstolen skal aldrig røres. Genbruger
-      // opsparingssimuleringen fra "Opsparing & Afkast"-fanen for at
-      // fremskrive formuen år for år frem til hvert kandidatår.
+      // leveomkostninger - dvs. hovedstolens købekraft skal aldrig røres.
+      // Genbruger simuleringen fra "Dagens Kroner"-fanen for at fremskrive
+      // formuen år for år, og regner alt i dagens kroner med realt afkast.
       function findMagicPensionYear() {
-        const askInitial =
-          parseFloat(document.getElementById("askInitial").value) || 0;
-        const stockInitial =
-          parseFloat(document.getElementById("stockInitial").value) || 0;
-        const monthly =
-          parseFloat(document.getElementById("monthly").value) || 0;
-        const growthRate =
-          (parseFloat(document.getElementById("returnRate").value) || 0) / 100;
-        const taxMethod = document.getElementById("taxMethod").value;
-        const accrualInterval =
-          document.getElementById("accrualInterval").value;
+        const val = (id) => parseFloat(document.getElementById(id).value) || 0;
+        const askInitial = val("realAskInitial");
+        const stockInitial = val("realStockInitial");
+        const monthly = val("realMonthly");
+        const monthlyIncrease = val("realMonthlyIncrease");
+        const growthRate = val("realReturnRate") / 100;
+        const accumulationInflation = val("realInflationRate") / 100;
+        const indexDeposits =
+          document.getElementById("realIndexDeposits").checked;
+        const taxMethod = document.getElementById("realTaxMethod").value;
+        const accrualInterval = document.getElementById(
+          "realAccrualInterval",
+        ).value;
         const payTaxWithFreshMoney = document.getElementById(
-          "payTaxWithFreshMoney",
+          "realPayTaxWithFreshMoney",
         ).checked;
 
         const currentAge =
           parseInt(document.getElementById("fireCurrentAge").value) || 0;
-        const annualExpensesToday =
-          parseFloat(document.getElementById("fireAnnualExpenses").value) || 0;
-        const inflation =
-          (parseFloat(document.getElementById("fireInflation").value) || 0) /
-          100;
-        const yieldRate =
-          (parseFloat(document.getElementById("fireReturnRate").value) || 0) /
-          100;
+        const annualExpensesToday = val("fireAnnualExpenses");
+        const yieldRate = getFireRealRate();
 
         const resultDiv = document.getElementById("magicResult");
         const MAX_YEARS = 60;
 
         if (yieldRate <= 0) {
           resultDiv.classList.remove("hidden");
-          resultDiv.innerHTML = `<p class="text-rose-700 font-medium">⚠️ "Afkast under nedsparing" skal være over 0%, for at der kan leves af afkastet alene.</p>`;
+          resultDiv.innerHTML = `<p class="text-rose-700 font-medium">⚠️ "Afkast under nedsparing" skal være højere end inflationen, for at der kan leves af afkastet alene.</p>`;
           window.__magicResult = null;
           return;
         }
@@ -2051,15 +2022,18 @@ ${realNetLabel} ${realNetValue}`;
             taxMethod,
             accrualInterval,
             payTaxWithFreshMoney,
+            inflation: accumulationInflation,
+            indexDeposits,
+            monthlyIncrease,
           });
 
-          let netBalance = sim.askBalance + sim.stockBalance;
+          // Formuen i dagens kroner
+          let netBalance = (sim.askBalance + sim.stockBalance) / sim.realDeflator;
           if (payTaxWithFreshMoney) {
-            netBalance -= sim.totalTaxPaid;
+            netBalance -= sim.totalTaxPaidReal;
           }
 
-          const expensesThisYear =
-            annualExpensesToday * Math.pow(1 + inflation, year);
+          const expensesThisYear = annualExpensesToday;
           const annualYield = netBalance * yieldRate;
 
           if (annualYield >= expensesThisYear) {
@@ -2087,17 +2061,17 @@ ${realNetLabel} ${realNetValue}`;
               <p class="text-2xl font-bold text-slate-900 mt-1">${age} år <span class="text-sm font-normal text-slate-500">(om ${found.year} år, ~${calendarYear})</span></p>
             </div>
             <div class="bg-white/70 p-4 rounded-xl border border-amber-200">
-              <p class="text-xs text-amber-700 uppercase font-semibold">Formue på det tidspunkt</p>
+              <p class="text-xs text-amber-700 uppercase font-semibold">Formue på det tidspunkt (dagens kr.)</p>
               <p class="text-2xl font-bold text-slate-900 mt-1">${formatDKK(found.netBalance)}</p>
             </div>
           </div>
           <div class="mt-3 text-sm space-y-1">
             <div class="flex justify-between">
-              <span class="text-slate-600">Forventet årligt afkast/udbytte (${(yieldRate * 100).toFixed(1)}%):</span>
+              <span class="text-slate-600">Forventet realt afkast (${(yieldRate * 100).toFixed(1)}%):</span>
               <span class="font-medium text-emerald-600">${formatDKK(found.annualYield)}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-600">Årlige leveomkostninger på det tidspunkt:</span>
+              <span class="text-slate-600">Årlige leveomkostninger (dagens kr.):</span>
               <span class="font-medium text-slate-900">${formatDKK(found.expensesThisYear)}</span>
             </div>
             <div class="flex justify-between border-t pt-1">
@@ -2106,7 +2080,7 @@ ${realNetLabel} ${realNetValue}`;
             </div>
           </div>
           <p class="text-xs text-slate-500 mt-3">
-            Fra denne alder kan dine årlige udgifter dækkes af det forventede afkast alene (renter/udbytte) - uden at du nogensinde behøver at røre selve opsparingen (hovedstolen). Bemærk at dette er en forenklet antagelse: den faktiske sammensætning af udbytte vs. kursgevinst, samt skat af selve afkastet, kan variere.
+            Fra denne alder kan dine årlige udgifter dækkes af det reale afkast alene - uden at opsparingens købekraft nogensinde falder. Alle beløb er i dagens kroner. Bemærk at dette er en forenklet antagelse: den faktiske sammensætning af udbytte vs. kursgevinst, samt skat af selve afkastet, kan variere.
           </p>
           <button
             type="button"
@@ -2145,6 +2119,7 @@ ${realNetLabel} ${realNetValue}`;
         const inflation =
           (parseFloat(document.getElementById("fireInflation").value) || 0) /
           100;
+        const realRate = getFireRealRate();
         const bufferMonthly =
           parseFloat(document.getElementById("fireBufferMonthly").value) || 0;
         const bufferRate =
@@ -2154,9 +2129,12 @@ ${realNetLabel} ${realNetValue}`;
         const yearsToRetire = Math.max(0, retireAge - currentAge);
         const bridgeYears = Math.max(0, pensionAge - retireAge);
 
-        // Fremskrivning af årlige leveomkostninger til pensionsalderen
-        const expenseAtRetirement =
-          annualExpensesToday * Math.pow(1 + inflation, yearsToRetire);
+        // Alt regnes i dagens kroner: leveomkostningerne er de samme hvert år
+        const expenseAtRetirement = annualExpensesToday;
+
+        const pct = (x) => (x * 100).toFixed(1).replace(".", ",") + "%";
+        document.getElementById("fireRealRateLabel").innerText =
+          `${pct(realRate)} (≈ ${pct(returnRate)} − ${pct(inflation)})`;
 
         // Permanent FIRE-tal (25x-reglen / 4% Safe Withdrawal Rate)
         const fireNumber = expenseAtRetirement * 25;
@@ -2169,24 +2147,23 @@ ${realNetLabel} ${realNetValue}`;
           bufferBalance += bufferMonthly;
           bufferBalance *= 1 + bufferMonthlyRate;
         }
+        // Bufferen spares op i faste kroner - omregn til dagens kroner
+        bufferBalance /= Math.pow(1 + inflation, yearsToRetire);
 
-        // Nedsparingssimulering: broen fra tidlig pension til pension.
-        // Hvert år hæves de inflationsjusterede leveomkostninger, hvorefter
-        // resten forrentes med afkastet under nedsparing.
+        // Nedsparingssimulering i dagens kroner: broen fra tidlig pension til
+        // pension. Hvert år hæves leveomkostningerne, hvorefter resten
+        // forrentes med det reale afkast.
         const tableBody = document.getElementById("fireYearlyTableBody");
         tableBody.innerHTML = "";
         let balance = portfolio;
         let finalBalance = portfolio;
 
         for (let i = 1; i <= bridgeYears; i++) {
-          const withdrawal =
-            expenseAtRetirement * Math.pow(1 + inflation, i - 1);
+          const withdrawal = expenseAtRetirement;
           const startBalance = balance;
           balance -= withdrawal;
-          const growth = balance * returnRate;
+          const growth = balance * realRate;
           balance += growth;
-          const realValue =
-            balance / Math.pow(1 + inflation, yearsToRetire + i);
 
           const row = `
                         <tr class="hover:bg-slate-50 border-b">
@@ -2195,19 +2172,14 @@ ${realNetLabel} ${realNetValue}`;
                             <td class="py-2.5 px-2">${formatDKK(startBalance)}</td>
                             <td class="py-2.5 px-2 text-rose-600">${formatDKK(withdrawal)}</td>
                             <td class="py-2.5 px-2 text-emerald-600">${formatDKK(growth)}</td>
-                            <td class="py-2.5 px-2">${formatDKK(balance)}</td>
-                            <td class="py-2.5 px-2 text-right font-medium">${formatDKK(realValue)}</td>
+                            <td class="py-2.5 px-2 text-right font-medium">${formatDKK(balance)}</td>
                         </tr>
                     `;
           tableBody.innerHTML += row;
           finalBalance = balance;
         }
 
-        const totalWealthNominal = portfolio + bufferBalance;
-        const totalWealthReal =
-          totalWealthNominal / Math.pow(1 + inflation, yearsToRetire);
-        const finalBalanceReal =
-          finalBalance / Math.pow(1 + inflation, yearsToRetire + bridgeYears);
+        const totalWealth = portfolio + bufferBalance;
 
         // Status-badge
         const statusBadge = document.getElementById("fireStatusBadge");
@@ -2236,13 +2208,8 @@ ${realNetLabel} ${realNetValue}`;
           formatDKK(portfolio);
         document.getElementById("fireResBuffer").innerText =
           formatDKK(bufferBalance);
-        document.getElementById("fireResTotalWealth").innerText = formatDKK(
-          totalWealthNominal,
-        );
-        document.getElementById("fireResTotalWealthReal").innerText =
-          formatDKK(totalWealthReal);
-        document.getElementById("fireResFinalBalanceReal").innerText =
-          formatDKK(finalBalanceReal);
+        document.getElementById("fireResTotalWealth").innerText =
+          formatDKK(totalWealth);
       }
 
       // Kopier FIRE-resultat
@@ -2263,29 +2230,21 @@ ${realNetLabel} ${realNetValue}`;
         const buffer = document.getElementById("fireResBuffer").innerText;
         const totalWealth =
           document.getElementById("fireResTotalWealth").innerText;
-        const totalWealthReal = document.getElementById(
-          "fireResTotalWealthReal",
-        ).innerText;
-        const finalBalanceReal = document.getElementById(
-          "fireResFinalBalanceReal",
-        ).innerText;
         const status = document.getElementById("fireStatusBadge").innerText;
 
-        const textToCopy = `TIDLIG PENSION (FIRE) - RESULTAT ${status}
+        const textToCopy = `TIDLIG PENSION (FIRE) - RESULTAT I DAGENS KRONER ${status}
 ----------------------------------
 Antal år til tidlig pension: ${yearsToRetire}
 Antal år broen skal dække: ${bridgeYears}
 
-Årlige udgifter ved pension: ${expenseAtRetirement}
+Årlige udgifter: ${expenseAtRetirement}
 Permanent FIRE-tal (25x-reglen): ${fireNumber}
 
 Formue ved tidlig pension: ${portfolio}
 Kontant buffer ved tidlig pension: ${buffer}
 Samlet formue ved tidlig pension: ${totalWealth}
-Samlet formue i dagens købekraft: ${totalWealthReal}
 
-Formue tilbage ved pension: ${finalBalance}
-Restformue i dagens købekraft: ${finalBalanceReal}`;
+Formue tilbage ved pension: ${finalBalance}`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
           const btn = document.getElementById("btnCopyFireResults");
@@ -2465,6 +2424,16 @@ Restformue i dagens købekraft: ${finalBalanceReal}`;
         document.getElementById("realResNaiveDiff").innerText = formatDKK(
           naiveNet - netReal,
         );
+
+        // Gemmes så FIRE-beregneren kan hente depotværdien i dagens kroner.
+        // Ved realisationsbeskatning med friske penge fratrækkes skatten ved
+        // salg, så formuen er den man reelt har efter salget.
+        const lastRow = sim.yearRows[sim.yearRows.length - 1];
+        const unpaidSaleTaxReal =
+          taxMethod === "realisation" && payTaxWithFreshMoney && lastRow
+            ? lastRow.stockTax / sim.realDeflator
+            : 0;
+        window.__lastRealPortfolio = grossReal - unpaidSaleTaxReal;
       }
 
       // Kopier input fra "Opsparing & Afkast"-fanen til "Dagens Kroner"
@@ -2769,16 +2738,16 @@ Samlet udbetalt efter skat: ${get("penResPayoutNet")}`;
         .getElementById("fireRetireAge")
         .addEventListener("change", syncYearsFromFireAges);
       document
-        .getElementById("years")
+        .getElementById("realYears")
         .addEventListener("change", syncFireAgesFromYears);
       document
-        .getElementById("months")
+        .getElementById("realMonths")
         .addEventListener("change", syncFireAgesFromYears);
 
       // Kør første beregning ved indlæsning
       calculate();
-      useCalcResultForFire();
       calculateReal();
+      useCalcResultForFire();
       calculatePension();
     </script>
   </body>
