@@ -809,9 +809,22 @@
                 value="5000"
                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
+              <label
+                class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer mt-2"
+              >
+                <input
+                  type="checkbox"
+                  id="penIndexDeposits"
+                  checked
+                  class="rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span>Hæv indbetalingen med inflationen hvert år</span>
+              </label>
               <p class="text-xs text-slate-500 mt-0.5">
-                Hæves med inflationen hvert år, så du indbetaler det samme i
-                købekraft.
+                Afkrydset: du indbetaler det samme i <em>købekraft</em> hvert år
+                (fx 5.000 kr. i dag, 5.100 kr. næste år ved 2% inflation). Ikke
+                afkrydset: et fast kronebeløb, som altså bliver mindre værd år for
+                år.
               </p>
               <label
                 class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer mt-2"
@@ -2558,6 +2571,8 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
         const payoutYears = Math.max(1, parseInt(document.getElementById("penPayoutYears").value) || 1);
         const payoutTax = val("penPayoutTax") / 100;
         const deductAm = document.getElementById("penDeductAm").checked;
+        const indexDeposits =
+          document.getElementById("penIndexDeposits").checked;
         const amFactor = deductAm ? 1 - AM_RATE : 1;
 
         const monthlyGrowth = Math.pow(1 + rate, 1 / 12) - 1;
@@ -2590,7 +2605,7 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
         // PAL-skat ved årets udgang
         for (let y = 0; y < years; y++) {
           const d = deflator(y + 1);
-          const grossDeposit = monthly * deflator(y);
+          const grossDeposit = indexDeposits ? monthly * deflator(y) : monthly;
           const deposit = grossDeposit * amFactor;
           let yearReturn = 0;
           let yearCosts = 0;
