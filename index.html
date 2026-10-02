@@ -768,9 +768,9 @@
             Ratepension
           </h2>
           <p class="text-slate-600 max-w-2xl mx-auto">
-            Fremskriver din ratepension (fx hos Danica) med PAL-skat af afkastet
-            hvert år, og beregner hvad du får udbetalt efter skat. Alle
-            hovedtal vises også i dagens kroner.
+            Fremskriver din ratepension (fx hos Danica) med omkostninger og
+            PAL-skat af afkastet hvert år, og beregner hvad du får udbetalt
+            efter skat. Alle beløb vises i dagens kroner.
           </p>
         </div>
 
@@ -838,12 +838,12 @@
                 <input
                   type="number"
                   id="penReturnRate"
-                  value="6.5"
+                  value="7"
                   step="0.1"
                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <p class="text-xs text-slate-500 mt-0.5">
-                  Efter omkostninger, før PAL-skat.
+                  Før omkostninger og PAL-skat.
                 </p>
               </div>
               <div>
@@ -858,6 +858,25 @@
                   class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Årlige omkostninger til Danica (ÅOP, %)</label
+              >
+              <input
+                type="number"
+                id="penCostRate"
+                value="1.2"
+                step="0.01"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <p class="text-xs text-slate-500 mt-0.5">
+                Danica Balance høj risiko: 1,09–1,21% i 2026 ifølge Danicas
+                faktaark (administration + investering). Din præcise ÅOP står på
+                din pensionsoversigt hos Danica – den kan være lavere via en
+                firmaaftale.
+              </p>
             </div>
 
             <div>
@@ -927,7 +946,7 @@
             <div>
               <div class="flex justify-between items-center border-b pb-2 mb-4">
                 <h2 class="text-lg font-semibold text-slate-900">
-                  Resultat ved pension
+                  Resultat i dagens kroner
                   <span
                     id="penPeriodLabel"
                     class="text-sm font-normal text-slate-500"
@@ -945,7 +964,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <p class="text-xs text-slate-500 uppercase font-semibold">
-                    Pensionsformue (før udbetalingsskat)
+                    Pensionsformue ved pension
                   </p>
                   <p
                     id="penResBalance"
@@ -954,8 +973,7 @@
                     0 kr.
                   </p>
                   <p class="text-xs text-slate-500 mt-1">
-                    I dagens kroner:
-                    <span id="penResBalanceReal" class="font-medium"></span>
+                    Før skat ved udbetaling
                   </p>
                 </div>
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
@@ -963,13 +981,13 @@
                     Udbetaling pr. måned efter skat
                   </p>
                   <p
-                    id="penResMonthlyNetReal"
+                    id="penResMonthlyNet"
                     class="text-2xl font-bold text-blue-900 mt-1"
                   >
                     0 kr.
                   </p>
                   <p class="text-xs text-blue-700 mt-1">
-                    I dagens kroner, første udbetalingsår
+                    Samme købekraft hvert år i udbetalingsperioden
                   </p>
                 </div>
               </div>
@@ -982,51 +1000,47 @@
                   >
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-slate-600"
-                    >Samlede indbetalinger (nominelt):</span
-                  >
+                  <span class="text-slate-600">Samlede indbetalinger:</span>
                   <span id="penResDeposits" class="font-medium text-slate-900"
                     >0 kr.</span
                   >
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-slate-600">Heraf AM-bidrag (8%):</span>
+                  <span class="text-slate-600">AM-bidrag (8%):</span>
                   <span id="penResAm" class="font-medium text-rose-600"
                     >0 kr.</span
                   >
                 </div>
                 <div class="flex justify-between border-t pt-2">
-                  <span class="text-slate-600">Afkast før PAL-skat:</span>
-                  <span id="penResReturn" class="font-medium text-emerald-600"
+                  <span class="text-slate-600"
+                    >Omkostninger til Danica (opsparing):</span
+                  >
+                  <span id="penResCosts" class="font-medium text-rose-600"
                     >0 kr.</span
                   >
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-slate-600">PAL-skat betalt (15,3%):</span>
+                  <span class="text-slate-600">PAL-skat (15,3%, opsparing):</span>
                   <span id="penResPal" class="font-medium text-rose-600"
                     >0 kr.</span
                   >
                 </div>
-                <div class="flex justify-between border-t pt-2">
+                <div class="flex justify-between">
                   <span class="text-slate-600"
-                    >Udbetaling pr. år før skat (nominelt):</span
+                    >Realt afkast (over inflation, netto):</span
                   >
+                  <span id="penResReturn" class="font-medium text-emerald-600"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600">Udbetaling pr. år før skat:</span>
                   <span id="penResYearlyGross" class="font-medium text-slate-900"
                     >0 kr.</span
                   >
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-slate-600"
-                    >Udbetaling pr. måned efter skat (nominelt):</span
-                  >
-                  <span id="penResMonthlyNet" class="font-medium text-slate-900"
-                    >0 kr.</span
-                  >
-                </div>
-                <div class="flex justify-between border-t pt-2">
-                  <span class="text-slate-600"
-                    >Samlet udbetalt før skat:</span
-                  >
+                  <span class="text-slate-600">Samlet udbetalt før skat:</span>
                   <span id="penResPayoutTotal" class="font-medium text-slate-900"
                     >0 kr.</span
                   >
@@ -1042,6 +1056,14 @@
                     >Samlet udbetalt efter skat:</span
                   >
                   <span id="penResPayoutNet" class="font-bold text-slate-900"
+                    >0 kr.</span
+                  >
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-slate-600"
+                    >Omkostninger til Danica i alt (inkl. udbetaling):</span
+                  >
+                  <span id="penResCostsTotal" class="font-medium text-rose-600"
                     >0 kr.</span
                   >
                 </div>
@@ -1066,9 +1088,10 @@
                 samlet).
               </p>
               <p>
-                <strong>2. Opsparing:</strong> Danica trækker 15,3% PAL-skat af
-                afkastet hvert år direkte fra pensionen. Er afkastet negativt,
-                gemmes et skattefradrag til senere år. Det er indregnet her.
+                <strong>2. Opsparing:</strong> Danica trækker sine omkostninger
+                (ÅOP) og 15,3% PAL-skat af afkastet efter omkostninger hvert år
+                direkte fra pensionen. Er afkastet negativt, gemmes et
+                skattefradrag til senere år. Det er indregnet her.
               </p>
               <p>
                 <strong>3. Udbetaling:</strong> Ratepensionen udbetales over
@@ -1081,8 +1104,13 @@
               <p>
                 <strong>Høj risiko:</strong> Danica trapper typisk risikoen ned,
                 når du nærmer dig pensionsalderen, så et konstant afkast er en
-                forenkling. Restbeløbet forrentes fortsat (med PAL-skat) i
-                udbetalingsperioden.
+                forenkling. Restbeløbet forrentes fortsat (med omkostninger og
+                PAL-skat) i udbetalingsperioden.
+              </p>
+              <p>
+                <strong>Dagens kroner:</strong> Alle beløb er omregnet til dagens
+                købekraft med den valgte inflation. Udbetalingen er sat, så den
+                har samme købekraft hvert år.
               </p>
             </div>
           </div>
@@ -1092,7 +1120,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div class="flex justify-between items-center border-b pb-3 mb-4">
             <h2 class="text-lg font-semibold text-slate-900">
-              År-for-år (opsparing og udbetaling)
+              År-for-år i dagens kroner (opsparing og udbetaling)
             </h2>
             <button
               onclick="copyPensionTable()"
@@ -1113,10 +1141,10 @@
                   <th class="py-3 px-2">Fase</th>
                   <th class="py-3 px-2">Indbetalt / Udbetalt</th>
                   <th class="py-3 px-2">Afkast</th>
+                  <th class="py-3 px-2">Omkostninger</th>
                   <th class="py-3 px-2">PAL-skat</th>
                   <th class="py-3 px-2">Udbetalt efter skat</th>
-                  <th class="py-3 px-2">Saldo</th>
-                  <th class="py-3 px-2 text-right">Saldo (dagens kr.)</th>
+                  <th class="py-3 px-2 text-right">Saldo</th>
                 </tr>
               </thead>
               <tbody id="penYearlyTableBody" class="divide-y divide-slate-100">
@@ -2524,6 +2552,7 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
         const balance0 = val("penBalance");
         const monthly = val("penMonthly");
         const rate = val("penReturnRate") / 100;
+        const costRate = val("penCostRate") / 100;
         const inflation = val("penInflationRate") / 100;
         const years = Math.max(0, parseInt(document.getElementById("penYears").value) || 0);
         const payoutYears = Math.max(1, parseInt(document.getElementById("penPayoutYears").value) || 1);
@@ -2534,17 +2563,20 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
         const monthlyGrowth = Math.pow(1 + rate, 1 / 12) - 1;
         const deflator = (year) => Math.pow(1 + inflation, year);
 
+        // Simuleringen kører i nominelle kroner; alle viste beløb omregnes
+        // til dagens kroner med deflatoren for det år, beløbet falder i.
         let balance = balance0;
         let palCredit = 0; // Negativ PAL-skat fremføres til senere år
-        let totalDeposits = 0;
-        let totalAm = 0;
-        let totalReturn = 0;
-        let totalPal = 0;
+        let totalDepositsReal = 0;
+        let totalAmReal = 0;
+        let totalCostsReal = 0;
+        let totalPalReal = 0;
         const rows = [];
 
-        // PAL-skat af årets afkast, med fremført fradrag for negative år
+        // PAL-skat af årets afkast efter omkostninger, med fremført fradrag
+        // for negative år
         const applyPal = (yearReturn) => {
-          let pal = yearReturn * PAL_RATE;
+          const pal = yearReturn * PAL_RATE;
           if (pal < 0) {
             palCredit += -pal;
             return 0;
@@ -2554,71 +2586,80 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
           return pal - offset;
         };
 
-        // Opsparingsfase
+        // Opsparingsfase: månedligt afkast, omkostninger og indbetaling,
+        // PAL-skat ved årets udgang
         for (let y = 0; y < years; y++) {
-          const start = balance;
+          const d = deflator(y + 1);
           const grossDeposit = monthly * deflator(y);
           const deposit = grossDeposit * amFactor;
-          let yearDeposits = 0;
+          let yearReturn = 0;
+          let yearCosts = 0;
           for (let m = 0; m < 12; m++) {
-            balance = balance * (1 + monthlyGrowth) + deposit;
-            yearDeposits += deposit;
+            const growth = balance * monthlyGrowth;
+            const cost = balance * (costRate / 12);
+            balance += growth - cost + deposit;
+            yearReturn += growth;
+            yearCosts += cost;
           }
-          const yearReturn = balance - start - yearDeposits;
-          const pal = applyPal(yearReturn);
+          const pal = applyPal(yearReturn - yearCosts);
           balance -= pal;
 
-          totalDeposits += yearDeposits;
-          totalAm += (grossDeposit - deposit) * 12;
-          totalReturn += yearReturn;
-          totalPal += pal;
+          totalDepositsReal += deposit * 12 / deflator(y);
+          totalAmReal += (grossDeposit - deposit) * 12 / deflator(y);
+          totalCostsReal += yearCosts / d;
+          totalPalReal += pal / d;
           rows.push({
             year: y + 1,
             phase: "Opsparing",
-            flow: yearDeposits,
-            yearReturn,
-            pal,
+            flow: (deposit * 12) / deflator(y),
+            yearReturn: yearReturn / d,
+            costs: yearCosts / d,
+            pal: pal / d,
             netPayout: null,
-            balance,
+            balance: balance / d,
           });
         }
 
-        const balanceAtRetirement = balance;
+        const balanceAtRetirementReal = balance / deflator(years);
 
-        // Udbetalingsfase: jævn årlig rate, der tømmer pensionen over perioden
-        const netRate = rate * (1 - PAL_RATE);
-        const yearlyPayout =
-          Math.abs(netRate) < 1e-9
-            ? balanceAtRetirement / payoutYears
-            : (balanceAtRetirement * netRate) /
-              (1 - Math.pow(1 + netRate, -payoutYears));
+        // Udbetalingsfase: udbetalingen stiger med inflationen, så den har
+        // samme købekraft hvert år og tømmer pensionen over perioden.
+        const netNominalRate = (rate - costRate) * (1 - PAL_RATE);
+        const netRealRate = (1 + netNominalRate) / (1 + inflation) - 1;
+        const yearlyPayoutReal =
+          Math.abs(netRealRate) < 1e-9
+            ? balanceAtRetirementReal / payoutYears
+            : (balanceAtRetirementReal * netRealRate) /
+              (1 - Math.pow(1 + netRealRate, -payoutYears));
 
-        let payoutReturn = 0;
-        let payoutPal = 0;
+        let totalPayoutReal = 0;
+        let payoutCostsReal = 0;
         for (let p = 0; p < payoutYears; p++) {
+          const year = years + p + 1;
+          const d = deflator(year);
           const yearReturn = balance * rate;
-          const pal = applyPal(yearReturn);
-          const payout = Math.min(yearlyPayout, balance + yearReturn - pal);
-          balance = balance + yearReturn - pal - payout;
-          payoutReturn += yearReturn;
-          payoutPal += pal;
+          const costs = balance * costRate;
+          const pal = applyPal(yearReturn - costs);
+          const payout = Math.min(
+            yearlyPayoutReal * d,
+            Math.max(0, balance + yearReturn - costs - pal),
+          );
+          balance = balance + yearReturn - costs - pal - payout;
+          totalPayoutReal += payout / d;
+          payoutCostsReal += costs / d;
           rows.push({
-            year: years + p + 1,
+            year,
             phase: "Udbetaling",
-            flow: -payout,
-            yearReturn,
-            pal,
-            netPayout: payout * (1 - payoutTax),
-            balance: Math.max(0, balance),
+            flow: -payout / d,
+            yearReturn: yearReturn / d,
+            costs: costs / d,
+            pal: pal / d,
+            netPayout: (payout * (1 - payoutTax)) / d,
+            balance: Math.max(0, balance) / d,
           });
         }
 
-        const totalPayout = rows
-          .filter((r) => r.phase === "Udbetaling")
-          .reduce((sum, r) => sum - r.flow, 0);
-        const firstPayoutDeflator = deflator(years + 1);
-
-        // Tabel
+        // Tabel (dagens kroner)
         const tableBody = document.getElementById("penYearlyTableBody");
         tableBody.innerHTML = rows
           .map((r) => {
@@ -2629,36 +2670,36 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
                             <td class="py-2.5 px-2">${r.phase}</td>
                             <td class="py-2.5 px-2 ${payoutRow ? "text-blue-700" : ""}">${formatDKK(r.flow)}</td>
                             <td class="py-2.5 px-2 text-emerald-600">${formatDKK(r.yearReturn)}</td>
+                            <td class="py-2.5 px-2 text-rose-600">${formatDKK(r.costs)}</td>
                             <td class="py-2.5 px-2 text-rose-600">${formatDKK(r.pal)}</td>
                             <td class="py-2.5 px-2">${r.netPayout === null ? "" : formatDKK(r.netPayout)}</td>
-                            <td class="py-2.5 px-2">${formatDKK(r.balance)}</td>
-                            <td class="py-2.5 px-2 font-bold text-right text-slate-800">${formatDKK(r.balance / deflator(r.year))}</td>
+                            <td class="py-2.5 px-2 font-bold text-right text-slate-800">${formatDKK(r.balance)}</td>
                         </tr>
                     `;
           })
           .join("");
 
-        // Resultater
+        // Resultater (dagens kroner)
         const set = (id, amount) =>
           (document.getElementById(id).innerText = formatDKK(amount));
         document.getElementById("penPeriodLabel").innerText =
           `(om ${years} år, udbetales over ${payoutYears} år)`;
-        set("penResBalance", balanceAtRetirement);
-        set("penResBalanceReal", balanceAtRetirement / deflator(years));
-        set(
-          "penResMonthlyNetReal",
-          (yearlyPayout * (1 - payoutTax)) / 12 / firstPayoutDeflator,
-        );
+        set("penResBalance", balanceAtRetirementReal);
+        set("penResMonthlyNet", (yearlyPayoutReal * (1 - payoutTax)) / 12);
         set("penResInitial", balance0);
-        set("penResDeposits", totalDeposits);
-        set("penResAm", totalAm);
-        set("penResReturn", totalReturn);
-        set("penResPal", totalPal);
-        set("penResYearlyGross", yearlyPayout);
-        set("penResMonthlyNet", (yearlyPayout * (1 - payoutTax)) / 12);
-        set("penResPayoutTotal", totalPayout);
-        set("penResPayoutTaxTotal", totalPayout * payoutTax);
-        set("penResPayoutNet", totalPayout * (1 - payoutTax));
+        set("penResDeposits", totalDepositsReal);
+        set("penResAm", totalAmReal);
+        set("penResCosts", totalCostsReal);
+        set("penResPal", totalPalReal);
+        set(
+          "penResReturn",
+          balanceAtRetirementReal - balance0 - totalDepositsReal,
+        );
+        set("penResYearlyGross", yearlyPayoutReal);
+        set("penResPayoutTotal", totalPayoutReal);
+        set("penResPayoutTaxTotal", totalPayoutReal * payoutTax);
+        set("penResPayoutNet", totalPayoutReal * (1 - payoutTax));
+        set("penResCostsTotal", totalCostsReal + payoutCostsReal);
 
         // Advarsel hvis indbetalingen overstiger fradragsloftet
         const yearlyDeposit = monthly * 12 * amFactor;
@@ -2678,22 +2719,23 @@ Den simple metode overvurderer med: ${get("realResNaiveDiff")}`;
       // Kopier ratepension-resultat
       function copyPensionResults() {
         const get = (id) => document.getElementById(id).innerText;
-        const textToCopy = `RATEPENSION ${get("penPeriodLabel")}
+        const textToCopy = `RATEPENSION I DAGENS KRONER ${get("penPeriodLabel")}
 ----------------------------------
-Pensionsformue ved pension: ${get("penResBalance")} (dagens kr.: ${get("penResBalanceReal")})
-Udbetaling pr. måned efter skat (dagens kr.): ${get("penResMonthlyNetReal")}
+Pensionsformue ved pension: ${get("penResBalance")}
+Udbetaling pr. måned efter skat: ${get("penResMonthlyNet")}
 
 Nuværende balance: ${get("penResInitial")}
-Samlede indbetalinger (nominelt): ${get("penResDeposits")}
-Heraf AM-bidrag (8%): ${get("penResAm")}
-Afkast før PAL-skat: ${get("penResReturn")}
-PAL-skat betalt (15,3%): ${get("penResPal")}
+Samlede indbetalinger: ${get("penResDeposits")}
+AM-bidrag (8%): ${get("penResAm")}
+Omkostninger til Danica (opsparing): ${get("penResCosts")}
+PAL-skat (15,3%, opsparing): ${get("penResPal")}
+Realt afkast (over inflation, netto): ${get("penResReturn")}
 
-Udbetaling pr. år før skat (nominelt): ${get("penResYearlyGross")}
-Udbetaling pr. måned efter skat (nominelt): ${get("penResMonthlyNet")}
+Udbetaling pr. år før skat: ${get("penResYearlyGross")}
 Samlet udbetalt før skat: ${get("penResPayoutTotal")}
 Indkomstskat ved udbetaling: ${get("penResPayoutTaxTotal")}
-Samlet udbetalt efter skat: ${get("penResPayoutNet")}`;
+Samlet udbetalt efter skat: ${get("penResPayoutNet")}
+Omkostninger til Danica i alt (inkl. udbetaling): ${get("penResCostsTotal")}`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
           const btn = document.getElementById("btnCopyPensionResults");
